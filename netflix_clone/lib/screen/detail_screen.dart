@@ -33,7 +33,7 @@ class _DetailScreenState extends State<DetailScreen> {
                     decoration: BoxDecoration(
                       image: DecorationImage(
                         image: AssetImage('images/' + widget.movie.poster),
-                        fit: BoxFit.cover,
+                        fit: BoxFit.fill,
                       ),
                     ),
                     child: ClipRect(
@@ -46,10 +46,11 @@ class _DetailScreenState extends State<DetailScreen> {
                             child: Column(
                               children: [
                                 Container(
-                                  padding: EdgeInsets.fromLTRB(0, 45, 0, 10),
+                                  padding: EdgeInsets.all(0),
+                                  margin: EdgeInsets.all(0),
                                   child: Image.asset(
                                       'images/' + widget.movie.poster),
-                                  height: 300,
+                                  // height: 400, // Container 위젯은 width, height를 넣지 않으면, 최대 크기로 확장해준다.
                                 ),
                                 Container(
                                   padding: EdgeInsets.all(7),
@@ -70,7 +71,12 @@ class _DetailScreenState extends State<DetailScreen> {
                                     ),
                                   ),
                                 ),
+                                SizedBox( // 재생버튼 위에 여백 넣기 방법1
+                                  height: 100,
+                                ),
                                 Container(
+                                  // 재생버튼 위에 여백 넣기 방법2
+                                  // margin: EdgeInsets.fromLTRB(0, 100, 0, 0),
                                   padding: EdgeInsets.all(3),
                                   child: ElevatedButton(
                                     onPressed: () {},
@@ -82,32 +88,104 @@ class _DetailScreenState extends State<DetailScreen> {
                                         Text('재생'),
                                       ],
                                     ),
+                                    style: ButtonStyle(
+                                      backgroundColor:
+                                          MaterialStateProperty.all<Color>(
+                                              Colors.red),
+                                    ),
                                   ),
                                 ),
                                 Container(
                                   padding: EdgeInsets.all(5),
                                   child: Text(widget.movie.toString()),
                                 ),
-                                Container(
-                                  padding: EdgeInsets.all(5),
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    '출연: 라이언 고슬링\n제작자: 누구누구',
-                                    style: TextStyle(
-                                        color: Colors.white60, fontSize: 12),
-                                  ),
-                                )
+                                // Container(
+                                //   padding: EdgeInsets.all(5),
+                                //   alignment: Alignment.centerLeft,
+                                //   // child: Text(
+                                //   //   '출연: 라이언 고슬링\n제작자: 누구누구',
+                                //   //   style: TextStyle(
+                                //   //       color: Colors.white60, fontSize: 12),
+                                //   // ),
+                                // ),
+
                               ],
                             ),
                           ),
                         ),
                       ),
                     ),
-                  )
+                  ),
+                  Positioned(
+                      child: AppBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                  ))
                 ],
-              )
+              ),
             ],
           ),
+        ),
+      ),
+      bottomNavigationBar: Container(
+        color: Colors.black26,
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+              child: Container(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    like ? Icon(Icons.check) : Icon(Icons.add),
+                    Padding(
+                      padding: EdgeInsets.all(5),
+                    ),
+                    Text(
+                      '내가 찜한 콘텐츠',
+                      style: TextStyle(fontSize: 11, color: Colors.white60),
+                    )
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+              child: Container(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.thumb_up),
+                    Padding(
+                      padding: EdgeInsets.all(5),
+                    ),
+                    Text(
+                      '평가',
+                      style: TextStyle(fontSize: 11, color: Colors.white60),
+                    )
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+              child: Container(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.send),
+                    Padding(
+                      padding: EdgeInsets.all(5),
+                    ),
+                    Text(
+                      '공유',
+                      style: TextStyle(fontSize: 11, color: Colors.white60),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

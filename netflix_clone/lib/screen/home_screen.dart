@@ -20,9 +20,9 @@ class _HomeScreenState extends State<HomeScreen> {
       'like': false
     }),
     Movie.fromMap({
-      'title': '라라랜드',
-      'keyword': '뮤직2',
-      'poster': 'lalaland_poster.jpg',
+      'title': '탑건',
+      'keyword': '전쟁',
+      'poster': 'topgun_poster.jpg',
       'like': false
     }),
     Movie.fromMap({
