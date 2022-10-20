@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1095770678050",
+    "project_id": "login-cbd2b",
+    "storage_bucket": "login-cbd2b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1095770678050:android:c97ffc24c81a6441debb7b",
+        "android_client_info": {
+          "package_name": "com.example.getx_level3"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1095770678050-kds6n0mlgbqs119681fo1eurcjpa6ag1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCB2I3PSqyTuZlkbMgWY8Z4xVp2zKBv6TE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1095770678050-kds6n0mlgbqs119681fo1eurcjpa6ag1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
