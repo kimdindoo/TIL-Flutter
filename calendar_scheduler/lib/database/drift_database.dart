@@ -33,10 +33,28 @@ class LocalDatabase extends _$LocalDatabase {
   Future<List<CategoryColor>> getCategoryColors() =>
       select(categoryColors).get();
 
-  Stream<List<Schedule>> watchSchedules(DateTime date){
-    // final query = select(schedules);
-    // query.where((tbl) => tbl.date.equals(date));
-    // return query.watch();
+  Stream<List<ScheduleWithColor>> watchSchedules(DateTime date) {
+    final query = select(schedules).join([
+      innerJoin(categoryColors, categoryColors.id.equalsExp(schedules.colorId))
+    ]);
+
+    query.where(schedules.date.equals(date));
+    query.orderBy(
+      [
+        // asc -> ascending 오름차순
+      // desc -> descending 내림차순
+        OrderingTerm.asc(schedules.startTime),
+      ]
+    );
+
+    return query.watch().map(
+          (rows) => rows.map(
+            (row) => ScheduleWithColor(
+              schedule: row.readTable(schedules),
+              categoryColor: row.readTable(categoryColors),
+            ),
+          ).toList(),
+        );
 
     int number = 3;
     // '3' -> String
@@ -44,8 +62,7 @@ class LocalDatabase extends _$LocalDatabase {
     // 3 -> int
     final resp2 = number..toString();
 
-    return (select(schedules)..where((tbl) => tbl.date.equals(date))).watch();
-
+    // return (select(schedules)..where((tbl) => tbl.date.equals(date))).watch();
   }
 
   @override
