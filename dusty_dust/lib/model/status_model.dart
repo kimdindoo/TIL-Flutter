@@ -17,7 +17,7 @@ class StatusModel {
   final Color lightColor;
 
   // 폰트색상
-  final Color detailfontColor;
+  final Color detailFontColor;
 
   // 이모티콘 이미지
   final String imagePath;
@@ -26,7 +26,7 @@ class StatusModel {
   final String comment;
 
   // 미세먼지 최소치
-  final double minFinedust;
+  final double minFineDust;
 
   // 초미세먼지 최소치
   final double minUltraFineDust;
@@ -49,10 +49,10 @@ class StatusModel {
     required this.primaryColor,
     required this.darkColor,
     required this.lightColor,
-    required this.detailfontColor,
+    required this.detailFontColor,
     required this.imagePath,
     required this.comment,
-    required this.minFinedust,
+    required this.minFineDust,
     required this.minUltraFineDust,
     required this.minO3,
     required this.minNO2,
