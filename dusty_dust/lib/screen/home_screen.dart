@@ -96,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
             final ssModel = stats.keys.map((key) {
               final value = stats[key]!;
               final stat = value[
-                  0]; // StatModel pm10RecentStat = stats[ItemCode.PM10]![0]; 랑 똑같음
+                  0];
 
               return StatAndStatusModel(
                 itemCode: key,
