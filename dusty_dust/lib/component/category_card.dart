@@ -8,11 +8,15 @@ import 'package:flutter/material.dart';
 
 class CategoryCard extends StatelessWidget {
   final String region;
+  final Color darkColor;
+  final Color lightColor;
   final List<StatAndStatusModel> models;
 
   const CategoryCard({
     required this.region,
     required this.models,
+    required this.darkColor,
+    required this.lightColor,
     Key? key,
   }) : super(key: key);
 
@@ -21,12 +25,14 @@ class CategoryCard extends StatelessWidget {
     return SizedBox(
       height: 160,
       child: MainCard(
+        backgroundColor: lightColor,
         child: LayoutBuilder(builder: (context, constraint) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               CardTitle(
                 title: '종류별 통계',
+                backgroundColor: darkColor,
               ),
               Expanded(
                 child: ListView(
