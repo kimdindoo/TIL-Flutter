@@ -7,16 +7,14 @@ import 'package:flutter/material.dart';
 class HourlyCard extends StatelessWidget {
   final Color darkColor;
   final Color lightColor;
-  final String category;
-  final List<StatModel> stats;
   final String region;
+  final ItemCode itemCode;
 
   const HourlyCard({
     required this.darkColor,
     required this.lightColor,
-    required this.category,
-    required this.stats,
     required this.region,
+    required this.itemCode,
     Key? key,
   }) : super(key: key);
 
