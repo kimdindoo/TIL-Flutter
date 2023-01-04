@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:dusty_dust/const/data.dart';
 import 'package:dusty_dust/model/stat_model.dart';
 
-class StatRepostiory {
+class StatRepository {
   static Future<List<StatModel>> fetchData({
   required ItemCode itemCode,
 }) async {
@@ -18,6 +18,8 @@ class StatRepostiory {
         'searchCondition': 'WEEK',
       },
     );
+
+    // print(response);
 
     return response.data['response']['body']['items'].map<StatModel>(
       (item) => StatModel.fromJson(json: item),

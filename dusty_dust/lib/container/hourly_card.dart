@@ -3,6 +3,7 @@ import 'package:dusty_dust/component/main_card.dart';
 import 'package:dusty_dust/model/stat_model.dart';
 import 'package:dusty_dust/utils/data_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class HourlyCard extends StatelessWidget {
   final Color darkColor;
@@ -26,13 +27,20 @@ class HourlyCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           CardTitle(
-            title: '시계별 $category',
+            title: '시계별 ${DataUtils.getItemCodeKrString(itemCode: itemCode)}',
             backgroundColor: darkColor,
           ),
-          Column(
-            children: stats.map(
-              (stat) => renderRow(stat: stat),
-            ).toList(),
+          ValueListenableBuilder<Box>(
+            valueListenable: Hive.box<StatModel>(itemCode.name).listenable(),
+            builder: (context, box, widget) => Column(
+              children: box.values
+                  .toList()
+                  .reversed
+                  .map(
+                    (stat) => renderRow(stat: stat),
+                  )
+                  .toList(),
+            ),
           ),
         ],
       ),
