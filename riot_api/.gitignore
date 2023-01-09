@@ -31,6 +31,8 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+# API Key
+lib/const/data.dart
 
 **/lib
 
@@ -45,5 +47,3 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# API Key
-**/lib/const/data.dart
