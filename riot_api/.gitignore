@@ -34,8 +34,6 @@ migrate_working_dir/
 # API Key
 lib/const/data.dart
 
-**/lib
-
 # Symbolication related
 app.*.symbols
 
