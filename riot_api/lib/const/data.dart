@@ -1,0 +1,1 @@
+const serviceKey = 'RGAPI-2bd4bbf5-56ad-485d-ae8b-4cc02e1364f0';

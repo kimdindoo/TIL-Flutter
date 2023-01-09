@@ -32,6 +32,8 @@ migrate_working_dir/
 .pub/
 /build/
 
+**/lib
+
 # Symbolication related
 app.*.symbols
 
@@ -42,3 +44,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# API Key
+data.dart
