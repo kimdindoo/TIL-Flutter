@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+
+StreamSubscription? _subscription;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,9 +42,7 @@ class BluePlusScreen extends StatelessWidget {
             child: Text('블루투스 검색 중지'),
           ),
           ElevatedButton(
-            onPressed: () async {
-
-            },
+            onPressed: () async {},
             child: Text('블루투스 연결'),
           ),
           ElevatedButton(
@@ -60,22 +62,25 @@ class BluePlusScreen extends StatelessWidget {
     );
   }
 
+
+
   void scan() {
-    // Start scanning
     flutterBlue.startScan(timeout: Duration(seconds: 4));
 
-// Listen to scan results
     var subscription = flutterBlue.scanResults.listen((results) {
-      // do something with scan results
-      for (ScanResult r in results) {
-        print('${r.device.name} found! rssi: ${r.rssi}');
 
-        if (r.device.name == 'moozi_023') {
-          r.device.connect();
+      results.where((element) => element.device.name.contains('moozi_023'));
 
-          print('connect moozi_023');
-        }
-      }
+      // for (ScanResult r in results) {
+      //   print('${r.device.name} found! rssi: ${r.rssi}');
+      //
+      //   if (r.device.name == 'moozi_023') {
+      //     r.device.connect();
+      //
+      //     print('connect moozi_023');
+      //   }
+      // }
+
     });
   }
 }
