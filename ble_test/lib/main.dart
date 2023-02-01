@@ -1,19 +1,22 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
 final flutterReactiveBle = FlutterReactiveBle();
 
 StreamSubscription? _subscription;
 
-final servicesToDiscover = {
-  Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'): [
-    Uuid.parse('00001F10-8835-40B6-8651-5691F8630806'),
-    Uuid.parse('00001F11-8835-40B6-8651-5691F8630806')
-  ]
-};
+StreamSubscription? _subscription2;
+
+String? foundDeviceId;
+
+// final servicesToDiscover = {
+//   Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'): [
+//     Uuid.parse('00001F10-8835-40B6-8651-5691F8630806'),
+//     Uuid.parse('00001F11-8835-40B6-8651-5691F8630806')
+//   ]
+// };
 
 final characteristicIdList = [
   Uuid.parse('00002a00-0000-1000-8000-00805f9b34fb'),
@@ -32,10 +35,11 @@ void main() {
 void _ble_scan_start() {
   _subscription = flutterReactiveBle
       .scanForDevices(withServices: [], scanMode: ScanMode.lowLatency)
-      .where((event) => event.name.contains('WOAWOA'))
+      .where((event) => event.name.contains('moozi_023'))
       .listen((device) {
         print(
-            'detect device id : ${device.id} // device.rssi : ${device.rssi} // device.name : ${device.name} // device.serviceUuids : ${device.serviceUuids}  // device.serviceData : ${device.serviceData} // device.manufacturerData :${device.manufacturerData}');
+            'detect device id : ${device.id} // device.rssi : ${device.rssi} // device.name : ${device.name} // device.serviceUuids : ${device.serviceUuids}');
+        foundDeviceId = device.id;
       }, onError: (e) {
         print('eeeeeeee:${e.toString()}');
       });
@@ -51,16 +55,19 @@ void _ble_scan_all_start() {
   });
 }
 
-void _ble_scan_stop() {
-  _subscription?.cancel();
+void _ble_scan_stop() async {
+  await _subscription?.cancel();
   _subscription = null;
+  print('ble stop');
 }
 
 void _ble_connect() {
-  flutterReactiveBle
+  print(foundDeviceId);
+
+  _subscription2 = flutterReactiveBle
       .connectToDevice(
-    id: '00:A0:50:56:84:51',
-    servicesWithCharacteristicsToDiscover: servicesToDiscover,
+    id: foundDeviceId!,
+    // servicesWithCharacteristicsToDiscover: servicesToDiscover,
     connectionTimeout: const Duration(seconds: 20),
   )
       .listen((connectionState) {
@@ -73,10 +80,10 @@ void _ble_connect() {
 
 void _ble_read() async {
   final characteristic = QualifiedCharacteristic(
-      serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
-      // characteristicId: Uuid.parse('00002a00-0000-1000-8000-00805f9b34fb'),
-      characteristicId: characteristicIdList[4],
-      deviceId: '00:A0:50:56:84:51');
+    serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
+    characteristicId: characteristicIdList[0],
+    deviceId: foundDeviceId!,
+  );
   final response = await flutterReactiveBle.readCharacteristic(characteristic);
 
   print(response);
@@ -84,9 +91,11 @@ void _ble_read() async {
 
 void _ble_write() async {
   final characteristic = QualifiedCharacteristic(
-      serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
-      characteristicId: Uuid.parse('00001F11-8835-40B6-8651-5691F8630806'),
-      deviceId: '00:A0:50:56:84:51');
+    serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
+    characteristicId: Uuid.parse('00001F11-8835-40B6-8651-5691F8630806'),
+    // characteristicId: characteristicIdList[0],
+    deviceId: foundDeviceId!,
+  );
   flutterReactiveBle
       .writeCharacteristicWithoutResponse(characteristic, value: [0x00]);
 }
@@ -145,7 +154,7 @@ class MyApp extends StatelessWidget {
             onPressed: () {
               _ble_scan_stop();
             },
-            child: Text('블루투스 중지'),
+            child: Text('블루투스 검색 중지'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -170,6 +179,12 @@ class MyApp extends StatelessWidget {
               _ble_scan_status();
             },
             child: Text('블루투스 연결 상태 확인'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await _subscription2?.cancel();
+            },
+            child: Text('블루투스 연결 중지'),
           ),
         ],
       ),
