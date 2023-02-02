@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
@@ -9,7 +10,7 @@ StreamSubscription? _subscription;
 
 StreamSubscription? _subscription2;
 
-String? foundDeviceId;
+String foundDeviceId = '00:A0:50:00:00:23';
 
 // final servicesToDiscover = {
 //   Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'): [
@@ -66,13 +67,16 @@ void _ble_connect() {
 
   _subscription2 = flutterReactiveBle
       .connectToDevice(
-    id: foundDeviceId!,
+    id: foundDeviceId,
     // servicesWithCharacteristicsToDiscover: servicesToDiscover,
     connectionTimeout: const Duration(seconds: 20),
   )
       .listen((connectionState) {
     // Handle connection state updates
+
     print('블루트스 연결 성공');
+    print(
+        'connectionState.connectionState : ${connectionState.connectionState} // connectionState.deviceId : ${connectionState.deviceId}');
   }, onError: (dynamic error) {
     // Handle a possible error
   });
@@ -81,8 +85,8 @@ void _ble_connect() {
 void _ble_read() async {
   final characteristic = QualifiedCharacteristic(
     serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
-    characteristicId: characteristicIdList[0],
-    deviceId: foundDeviceId!,
+    characteristicId:Uuid.parse('00001F10-8835-40B6-8651-5691F8630806'),
+    deviceId: foundDeviceId,
   );
   final response = await flutterReactiveBle.readCharacteristic(characteristic);
 
@@ -94,10 +98,18 @@ void _ble_write() async {
     serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
     characteristicId: Uuid.parse('00001F11-8835-40B6-8651-5691F8630806'),
     // characteristicId: characteristicIdList[0],
-    deviceId: foundDeviceId!,
+    deviceId: foundDeviceId,
   );
-  flutterReactiveBle
-      .writeCharacteristicWithoutResponse(characteristic, value: [0x00]);
+
+  List<int> bytes = utf8.encode('!ftm vibrator');
+  print('encoding : $bytes');
+
+  //
+  flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
+      value: bytes);
+
+
+  await flutterReactiveBle.writeCharacteristicWithResponse(characteristic, value: bytes);
 }
 
 void _ble_scan_status() {
@@ -163,6 +175,12 @@ class MyApp extends StatelessWidget {
             child: Text('블루투스 연결'),
           ),
           ElevatedButton(
+            onPressed: () async {
+              await _subscription2?.cancel();
+            },
+            child: Text('블루투스 연결 중지'),
+          ),
+          ElevatedButton(
             onPressed: () {
               _ble_read();
             },
@@ -179,12 +197,6 @@ class MyApp extends StatelessWidget {
               _ble_scan_status();
             },
             child: Text('블루투스 연결 상태 확인'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              await _subscription2?.cancel();
-            },
-            child: Text('블루투스 연결 중지'),
           ),
         ],
       ),
