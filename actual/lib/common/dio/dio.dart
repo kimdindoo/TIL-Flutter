@@ -19,6 +19,8 @@ class CustomInterceptor extends Interceptor {
       RequestOptions options, RequestInterceptorHandler handler) async {
     print('[REQ] [${options.method}] ${options.uri}');
 
+    print(options.headers['accessToken']);
+
     if (options.headers['accessToken'] == 'true') {
       // 헤더 삭제
       options.headers.remove('accessToken');
@@ -47,6 +49,12 @@ class CustomInterceptor extends Interceptor {
   }
 
 // 2) 응답을 받을때
+  @override
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
+    print('[RES] [${response.requestOptions.method}] ${response.requestOptions.uri}');
+
+    return super.onResponse(response, handler);
+  }
 // 3) 에러가 났을때
   @override
   void onError(DioError err, ErrorInterceptorHandler handler) async {
@@ -97,5 +105,6 @@ class CustomInterceptor extends Interceptor {
         return handler.reject(e);
       }
     }
+    return handler.reject(err);
   }
 }
