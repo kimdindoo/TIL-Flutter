@@ -5,6 +5,9 @@ import 'package:ble_test/screen/get_set_data_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'common/data.dart';
 
 final flutterReactiveBle = FlutterReactiveBle();
 
@@ -13,10 +16,6 @@ StreamSubscription? _subscription;
 StreamSubscription? _subscription2;
 
 // late String foundDeviceId;
-
-final storage = FlutterSecureStorage();
-
-const DEVICE_ID = 'DEVICE_ID';
 
 // FlutterSecureStorage? foundDeviceId;
 
@@ -38,14 +37,20 @@ final characteristicIdList = [
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // SharedPreferences Test
+
+  // final prefs = await SharedPreferences.getInstance();
+  // final List<String>? items = prefs.getStringList('items');
+  // print(items![0]);
+
   await storage.delete(key: DEVICE_ID);
 
   runApp(
     MaterialApp(
       theme: ThemeData(
-        // useMaterial3: true,
-        // colorSchemeSeed: Colors.indigo,
-      ),
+          // useMaterial3: true,
+          // colorSchemeSeed: Colors.indigo,
+          ),
       home: MyApp(),
     ),
   );
@@ -59,6 +64,16 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+
+  List<String> items = ['50', '0', '0'];
+  List<String> items2 = ['50', '0', '0'];
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   // Android Uuid 가져오기
   @override
   Widget build(BuildContext context) {
@@ -85,9 +100,18 @@ class _MyAppState extends State<MyApp> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
               onPressed: () {
-                Navigator.of(context).push(
+                // Navigator.of(context).push(
+                //   MaterialPageRoute(
+                //     builder: (_) => GetSetDataScreen(data),
+                //   ),
+                // );
+                Navigator.push(
+                  context,
                   MaterialPageRoute(
-                    builder: (_) => GetSetDataScreen(),
+                    builder: (context) => GetSetDataScreen(
+                      data: items,
+                      data2: items2,
+                    ),
                   ),
                 );
               },
@@ -109,7 +133,7 @@ class _MyAppState extends State<MyApp> {
               onPressed: () {
                 _ble_scan_start();
               },
-              child: Text('블루투스 특정 검색'),
+              child: Text('블루투스 특정(moozi_023) 검색'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -155,6 +179,22 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
     );
+  }
+
+  void getConfigList() async {
+    String? foundDeviceId = await storage.read(key: DEVICE_ID);
+
+    final characteristic = QualifiedCharacteristic(
+      serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
+      characteristicId: Uuid.parse('00001F11-8835-40B6-8651-5691F8630806'),
+      deviceId: foundDeviceId!,
+    );
+
+    List<int> bytes = ascii.encode('CL');
+    print('encoding : $bytes');
+
+    flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
+        value: bytes);
   }
 
   void _ble_scan_status() {
@@ -228,7 +268,17 @@ class _MyAppState extends State<MyApp> {
       if (connectionState.connectionState == DeviceConnectionState.connected) {
         print('## 연결 성공 ##');
         _ble_get_notification();
-        print('알림 정보 받기');
+        print('알림 정보 받기 실행');
+        getConfigList();
+        // print('화면 이동');
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(
+        //     builder: (context) => GetSetDataScreen(
+        //       data: items,
+        //     ),
+        //   ),
+        // );
       } else {
         print('연결 실패');
       }
@@ -284,11 +334,14 @@ class _MyAppState extends State<MyApp> {
   void _ble_get_notification() async {
     String? foundDeviceId = await storage.read(key: DEVICE_ID);
 
+    final SharedPreferences prefs = await _prefs;
+
     final characteristic = QualifiedCharacteristic(
         serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
         characteristicId: Uuid.parse('00001F10-8835-40B6-8651-5691F8630806'),
         deviceId: foundDeviceId!);
-    flutterReactiveBle.subscribeToCharacteristic(characteristic).listen((data) {
+    flutterReactiveBle.subscribeToCharacteristic(characteristic).listen(
+        (data) async {
       // print(data);
 
       var decode = utf8.decode(data);
@@ -306,7 +359,33 @@ class _MyAppState extends State<MyApp> {
         double kg = (percentage / 2.0 * 100).round() / 100.0;
         double lb = (kg * 2.2046 * 100) / 100.0;
 
-        // print('악력 크기 : $percentage % $kg kg $lb lb');
+        print('악력 크기 : $percentage % $kg kg $lb lb');
+      } else if (decode.contains('C1')) {
+        print('구성 리스트 C1 가져오기 성공');
+        print(decode);
+
+        print(decode.substring(3, 14));
+
+        String str = decode.substring(3, 14);
+
+        List<String> result = str.split(',');
+
+        print(result);
+
+        await prefs.setStringList('items', result);
+        // final List<String>? items = prefs.getStringList('items');
+        items = prefs.getStringList('items')!;
+      } else if (decode.contains('C2')) {
+        print('구성 리스트 C2 가져오기 성공');
+
+        String str = decode.substring(3, 14);
+
+        List<String> result = str.split(',');
+
+        print(result);
+
+        await prefs.setStringList('items2', result);
+        items2 = prefs.getStringList('items2')!;
       } else {
         print(decode);
       }
