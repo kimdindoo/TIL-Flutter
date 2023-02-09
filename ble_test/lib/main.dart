@@ -292,7 +292,7 @@ class _MyAppState extends State<MyApp> {
       // print(data);
 
       var decode = utf8.decode(data);
-      // print('decoding : $decode');
+      print('decoding : $decode');
 
       // String result = decode.replaceAll(RegExp('[^0-9\\s]'), ""); // 정규식 숫자만
 

@@ -41,19 +41,19 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
               style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orangeAccent),
               onPressed: () {
-                _ble_write_battery();
+                getPower();
               },
               child: Text('블루투스 배터리 잔량 확인'),
             ),
             ElevatedButton(
               onPressed: () {
-                _ble_ledOn();
+                LedOn();
               },
               child: Text('블루투스 led ON'),
             ),
             ElevatedButton(
               onPressed: () {
-                _ble_ledOff();
+                ledOff();
               },
               child: Text('블루투스 led OFF'),
             ),
@@ -66,7 +66,7 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey),
               onPressed: () {
-                _ble_setVibrationPower();
+                setVibrationPower();
               },
               child: Text('진동 세기 설정'),
             ),
@@ -80,14 +80,14 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
               onPressed: () {
-                _ble_getConfigList();
+                getConfigList();
               },
               child: Text('구성 리스트 가져오기'),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
               onPressed: () {
-                _ble_getVibrationMode();
+                getVibrationMode();
               },
               child: Text('진동 모드 가져오기'),
             ),
@@ -96,21 +96,21 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
               onPressed: () {
                 getVibrationPower();
               },
-              child: Text('진동 세기'),
+              child: Text('진동 세기 가져오기'),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
               onPressed: () {
                 getVibrationInrterval();
               },
-              child: Text('진동 인터벌 시간'),
+              child: Text('진동 인터벌 시간 가져오기'),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
               onPressed: () {
                 getVersion();
               },
-              child: Text('디바이스 버전'),
+              child: Text('디바이스 버전 가져오기'),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
@@ -146,7 +146,7 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
     );
   }
 
-  void _ble_write_battery() async {
+  void getPower() async {
     String? foundDeviceId = await storage.read(key: DEVICE_ID);
 
     final characteristic = QualifiedCharacteristic(
@@ -164,7 +164,7 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
     // await flutterReactiveBle.writeCharacteristicWithResponse(characteristic, value: bytes);
   }
 
-  void _ble_ledOn() async {
+  void LedOn() async {
     String? foundDeviceId = await storage.read(key: DEVICE_ID);
 
     final characteristic = QualifiedCharacteristic(
@@ -180,7 +180,7 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
         value: bytes);
   }
 
-  void _ble_ledOff() async {
+  void ledOff() async {
     String? foundDeviceId = await storage.read(key: DEVICE_ID);
 
     final characteristic = QualifiedCharacteristic(
@@ -196,7 +196,7 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
         value: bytes);
   }
 
-  void _ble_setVibrationPower() async {
+  void setVibrationPower() async {
     String? foundDeviceId = await storage.read(key: DEVICE_ID);
 
     final characteristic = QualifiedCharacteristic(
@@ -228,7 +228,7 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
         value: bytes);
   }
 
-  void _ble_getConfigList() async {
+  void getConfigList() async {
     String? foundDeviceId = await storage.read(key: DEVICE_ID);
 
     final characteristic = QualifiedCharacteristic(
@@ -244,7 +244,7 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
         value: bytes);
   }
 
-  void _ble_getVibrationMode() async {
+  void getVibrationMode() async {
     String? foundDeviceId = await storage.read(key: DEVICE_ID);
 
     final characteristic = QualifiedCharacteristic(
@@ -260,7 +260,7 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
         value: bytes);
   }
 
-  void _ble_setVibrationOption(String value) async {
+  void setVibrationType(String value) async {
     String? foundDeviceId = await storage.read(key: DEVICE_ID);
 
     final characteristic = QualifiedCharacteristic(
@@ -443,7 +443,7 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
             onPressed: () {
               // print(_checkedTime);
               print(sendVibrationOption);
-              _ble_setVibrationOption(sendVibrationOption);
+              setVibrationType(sendVibrationOption);
             },
           ),
         )
