@@ -23,7 +23,7 @@ class SliderController {
 }
 
 class _GetDataScreenState extends State<GetSetDataScreen> {
-  List<String> _texts = ['VM(진동없음)', 'VA', 'VB', 'VC', 'VD'];
+  List<String> _texts = ['VM', 'VA', 'VB', 'VC', 'VD'];
 
   late List<bool> _isChecked;
 
@@ -205,6 +205,38 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
                 resetWalkCount();
               },
               child: Text('만보기 리셋'),
+            ),
+            ElevatedButton(
+              style:
+                  ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+              onPressed: () {
+                getGrabPowerHigh();
+              },
+              child: Text('최대악력 설정 값 가져오기'),
+            ),
+            ElevatedButton(
+              style:
+                  ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+              onPressed: () {
+                getGrabPowerLow();
+              },
+              child: Text('최소악력 설정 값 가져오기'),
+            ),
+            ElevatedButton(
+              style:
+                  ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+              onPressed: () {
+                getLoadCellInit();
+              },
+              child: Text('로드셀 LI'),
+            ),
+            ElevatedButton(
+              style:
+                  ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+              onPressed: () {
+                getLoadCellMiddle();
+              },
+              child: Text('로드셀 LM'),
             ),
           ],
         ),
@@ -589,6 +621,70 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
     );
 
     List<int> bytes = ascii.encode('SS');
+    print('encoding : $bytes');
+
+    flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
+        value: bytes);
+  }
+
+  void getGrabPowerHigh() async {
+    String? foundDeviceId = await storage.read(key: DEVICE_ID);
+
+    final characteristic = QualifiedCharacteristic(
+      serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
+      characteristicId: Uuid.parse('00001F11-8835-40B6-8651-5691F8630806'),
+      deviceId: foundDeviceId!,
+    );
+
+    List<int> bytes = ascii.encode('LHR');
+    print('encoding : $bytes');
+
+    flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
+        value: bytes);
+  }
+
+  void getGrabPowerLow() async {
+    String? foundDeviceId = await storage.read(key: DEVICE_ID);
+
+    final characteristic = QualifiedCharacteristic(
+      serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
+      characteristicId: Uuid.parse('00001F11-8835-40B6-8651-5691F8630806'),
+      deviceId: foundDeviceId!,
+    );
+
+    List<int> bytes = ascii.encode('LLR');
+    print('encoding : $bytes');
+
+    flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
+        value: bytes);
+  }
+
+  void getLoadCellInit() async {
+    String? foundDeviceId = await storage.read(key: DEVICE_ID);
+
+    final characteristic = QualifiedCharacteristic(
+      serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
+      characteristicId: Uuid.parse('00001F11-8835-40B6-8651-5691F8630806'),
+      deviceId: foundDeviceId!,
+    );
+
+    List<int> bytes = ascii.encode('LI');
+    print('encoding : $bytes');
+
+    flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
+        value: bytes);
+  }
+
+  void getLoadCellMiddle() async {
+    String? foundDeviceId = await storage.read(key: DEVICE_ID);
+
+    final characteristic = QualifiedCharacteristic(
+      serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
+      characteristicId: Uuid.parse('00001F11-8835-40B6-8651-5691F8630806'),
+      deviceId: foundDeviceId!,
+    );
+
+    List<int> bytes = ascii.encode('LM');
     print('encoding : $bytes');
 
     flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,

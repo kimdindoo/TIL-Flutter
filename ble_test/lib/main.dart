@@ -354,8 +354,42 @@ class _MyAppState extends State<MyApp> {
         print('배터리 잔량 : $result');
       } else if (decode.substring(0, 1) == 'L') {
         String result = decode.replaceAll(RegExp('\\D'), ""); // 위아래 똑같음
-        double d = double.parse(result);
-        double percentage = (d * 100.0 * 100).round() / 100.0;
+
+        var low = 0.0;
+        var high = 0.0;
+        var loadCellLowValue = 0;
+        var loadCellHighValue = 100;
+        var loadCellInitVal = 16267000;
+        var loadCellMaxVal = 12600000;
+
+        if (loadCellLowValue + (100 - loadCellHighValue) <= 100) {
+          if (loadCellLowValue != 0) {
+            low = (loadCellInitVal - loadCellMaxVal).toDouble() *
+                loadCellLowValue.toDouble() /
+                100.0;
+          }
+          if (loadCellHighValue != 100) {
+            high = (loadCellInitVal - loadCellMaxVal).toDouble() *
+                (100 - loadCellHighValue).toDouble() /
+                100;
+          }
+        }
+
+        var maxValue = loadCellMaxVal.toDouble() + high;
+        var minValue = loadCellInitVal.toDouble() - low;
+
+        double tempVal = double.parse(result);
+        var value = tempVal - maxValue;
+
+        var res = 1.0 - value / (minValue - maxValue);
+        if (res < 0.0) {
+          res = 0.0;
+        }
+        if (res > 1.0) {
+          res = 1.0;
+        }
+
+        double percentage = (res * 100.0 * 100).round() / 100.0;
         double kg = (percentage / 2.0 * 100).round() / 100.0;
         double lb = (kg * 2.2046 * 100) / 100.0;
 
