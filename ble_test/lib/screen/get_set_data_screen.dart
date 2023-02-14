@@ -6,10 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
 class GetSetDataScreen extends StatefulWidget {
-  final List<String> data;
-  final List<String> data2;
+  final List<String> outCallback1;
+  final List<String> outCallback2;
 
-  const GetSetDataScreen({required this.data, required this.data2, Key? key})
+  const GetSetDataScreen(
+      {required this.outCallback1, required this.outCallback2, Key? key})
       : super(key: key);
 
   @override
@@ -27,59 +28,73 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
 
   late List<bool> _isChecked;
 
-  // late List<int> _checkedTime;
-
   String sendVibrationOption = 'VA';
 
   late SliderController _powerSliderController;
-  late SliderController _timeSliderController;
+  late SliderController _operationSliderController;
   late SliderController _intervalSliderController;
+
+  late RangeValues _currentRangeValues;
 
   @override
   void initState() {
     super.initState();
-    // _isChecked = List<bool>.filled(_texts.length, false);
 
-    int checkNum = int.parse(widget.data2[2]); // 0, 1, 2, 3, 4
+    int vibrationMode = int.parse(widget.outCallback2[2]); // 0, 1, 2, 3, 4
+
+    double grabPowerLow = double.parse(widget.outCallback1[0]);
+    double grabPowerHigh = double.parse(widget.outCallback1[1]);
+
+    double vibrationPower = double.parse(widget.outCallback1[2]);
+    double vibrationOperation = double.parse(widget.outCallback2[0]);
+    double vibrationInterval = double.parse(widget.outCallback2[1]);
 
     _isChecked = List<bool>.generate(
-        _texts.length, (index) => index == checkNum ? true : false);
+        _texts.length, (index) => index == vibrationMode ? true : false);
 
-    _powerSliderController = SliderController(double.parse(widget.data[2]));
-    _timeSliderController = SliderController(double.parse(widget.data2[0]));
-    _intervalSliderController = SliderController(double.parse(widget.data2[1]));
-    // _checkedTime = [];
+    _powerSliderController = SliderController(vibrationPower);
+    _operationSliderController = SliderController(vibrationOperation);
+    _intervalSliderController = SliderController(vibrationInterval);
+    _currentRangeValues = RangeValues(grabPowerLow, grabPowerHigh);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('데이터 송수신 ${widget.data[0]}'),
+        backgroundColor: Colors.blueGrey,
+        title: Text('블루투스 설정'),
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orangeAccent),
-              onPressed: () {
-                getPower();
-              },
-              child: Text('블루투스 배터리 잔량 확인'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                LedOn();
-              },
-              child: Text('블루투스 led ON'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                ledOff();
-              },
-              child: Text('블루투스 led OFF'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey),
+                  onPressed: () {
+                    print(Battery.power);
+                    getPower();
+                    setState(() {});
+                  },
+                  child: Text('배터리 잔량 : ${Battery.power}'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    LedOn();
+                  },
+                  child: Text('LED ON'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    ledOff();
+                  },
+                  child: Text('LED OFF'),
+                ),
+              ],
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey),
@@ -102,7 +117,7 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
               child: Text('진동 세기 설정(0~100)'),
             ),
             buildSlider(
-              controller: _timeSliderController,
+              controller: _operationSliderController,
               divisions: 570,
               color: Colors.blueGrey,
               max: 570,
@@ -110,8 +125,9 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey),
               onPressed: () {
-                print(_timeSliderController.sliderValue);
-                setVibrationTime(_timeSliderController.sliderValue.toInt());
+                print(_operationSliderController.sliderValue);
+                setVibrationTime(
+                    _operationSliderController.sliderValue.toInt());
               },
               child: Text('진동 동작 시간 설정(0~570)'),
             ),
@@ -143,100 +159,90 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
                 ),
               ],
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
-              onPressed: () {
-                getConfigList();
-              },
-              child: Text('구성 리스트 가져오기'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
-              onPressed: () {
-                getVibrationMode();
-              },
-              child: Text('진동 모드 가져오기'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
-              onPressed: () {
-                getVibrationPower();
-              },
-              child: Text('진동 세기 가져오기'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
-              onPressed: () {
-                getVibrationInrterval();
-              },
-              child: Text('진동 인터벌 시간 가져오기'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.brown),
-              onPressed: () {
-                getVersion();
-              },
-              child: Text('디바이스 버전 가져오기'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  style:
+                      ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+                  onPressed: () {
+                    setWalkModeOn();
+                  },
+                  child: Text('만보기 모드 ON'),
+                ),
+                ElevatedButton(
+                  style:
+                      ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+                  onPressed: () {
+                    setWalkModeOff();
+                  },
+                  child: Text('만보기 모드 OFF'),
+                ),
+              ],
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
-              onPressed: () {
-                setWalkModeOn();
-              },
-              child: Text('만보기 모드 ON'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
-              onPressed: () {
-                setWalkModeOff();
-              },
-              child: Text('만보기 모드 OFF'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
-              onPressed: () {
+              onPressed: () async {
+                print('1');
+                print(OnWalk.count);
                 getWalkCount();
+                print('2');
+                print(OnWalk.count);
+                setState(() {});
               },
-              child: Text('만보기 정보 가져오기'),
+              child: Text('만보기 카운트 : ${OnWalk.count}'),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
               onPressed: () {
                 resetWalkCount();
+                setState(() {
+                  OnWalk.count = 0;
+                });
               },
               child: Text('만보기 리셋'),
             ),
-            ElevatedButton(
-              style:
-                  ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-              onPressed: () {
-                getGrabPowerHigh();
+            RangeSlider(
+              values: _currentRangeValues,
+              max: 100,
+              divisions: 10,
+              activeColor: Colors.redAccent,
+              // inactiveColor: Colors.grey,
+              labels: RangeLabels(
+                _currentRangeValues.start.round().toString(),
+                _currentRangeValues.end.round().toString(),
+              ),
+              onChanged: (RangeValues values) {
+                setState(() {
+                  _currentRangeValues = values;
+                });
               },
-              child: Text('최대악력 설정 값 가져오기'),
             ),
             ElevatedButton(
               style:
                   ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
               onPressed: () {
-                getGrabPowerLow();
+                setGrabPower(_currentRangeValues.start.toInt(),
+                    _currentRangeValues.end.toInt());
+
+                Grab.loadCellLowValue = _currentRangeValues.start.toInt();
+                Grab.loadCellHighValue = _currentRangeValues.end.toInt();
               },
-              child: Text('최소악력 설정 값 가져오기'),
+              child: Text('악력 값 설정'),
             ),
             ElevatedButton(
-              style:
-                  ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.cyan),
               onPressed: () {
-                getLoadCellInit();
+                startGyro();
               },
-              child: Text('로드셀 LI'),
+              child: Text('자이로 모드 켜기'),
             ),
             ElevatedButton(
-              style:
-                  ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.cyan),
               onPressed: () {
-                getLoadCellMiddle();
+                stopGyro();
               },
-              child: Text('로드셀 LM'),
+              child: Text('자이로 모드 끄기'),
             ),
           ],
         ),
@@ -264,11 +270,6 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
 
                       print(sendVibrationOption);
                       print(index);
-                      // if(_isChecked[index] == true){
-                      //   _checkedTime.add(index);
-                      // } else {
-                      //   _checkedTime.remove(index);
-                      // }
                     });
                   },
                 ),
@@ -337,6 +338,38 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
     );
   }
 
+  void startGyro() async {
+    String? foundDeviceId = await storage.read(key: DEVICE_ID);
+
+    final characteristic = QualifiedCharacteristic(
+      serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
+      characteristicId: Uuid.parse('00001F11-8835-40B6-8651-5691F8630806'),
+      deviceId: foundDeviceId!,
+    );
+
+    List<int> bytes = ascii.encode('KS');
+    print('encoding : $bytes');
+
+    flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
+        value: bytes);
+  }
+
+  void stopGyro() async {
+    String? foundDeviceId = await storage.read(key: DEVICE_ID);
+
+    final characteristic = QualifiedCharacteristic(
+      serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
+      characteristicId: Uuid.parse('00001F11-8835-40B6-8651-5691F8630806'),
+      deviceId: foundDeviceId!,
+    );
+
+    List<int> bytes = ascii.encode('KT');
+    print('encoding : $bytes');
+
+    flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
+        value: bytes);
+  }
+
   void getPower() async {
     String? foundDeviceId = await storage.read(key: DEVICE_ID);
 
@@ -351,8 +384,6 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
 
     flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
         value: bytes);
-
-    // await flutterReactiveBle.writeCharacteristicWithResponse(characteristic, value: bytes);
   }
 
   void LedOn() async {
@@ -451,38 +482,6 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
         value: bytes);
   }
 
-  void getConfigList() async {
-    String? foundDeviceId = await storage.read(key: DEVICE_ID);
-
-    final characteristic = QualifiedCharacteristic(
-      serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
-      characteristicId: Uuid.parse('00001F11-8835-40B6-8651-5691F8630806'),
-      deviceId: foundDeviceId!,
-    );
-
-    List<int> bytes = ascii.encode('CL');
-    print('encoding : $bytes');
-
-    flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
-        value: bytes);
-  }
-
-  void getVibrationMode() async {
-    String? foundDeviceId = await storage.read(key: DEVICE_ID);
-
-    final characteristic = QualifiedCharacteristic(
-      serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
-      characteristicId: Uuid.parse('00001F11-8835-40B6-8651-5691F8630806'),
-      deviceId: foundDeviceId!,
-    );
-
-    List<int> bytes = ascii.encode('VMR');
-    print('encoding : $bytes');
-
-    flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
-        value: bytes);
-  }
-
   void setVibrationType(String value) async {
     String? foundDeviceId = await storage.read(key: DEVICE_ID);
 
@@ -493,54 +492,6 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
     );
 
     List<int> bytes = ascii.encode(value);
-    print('encoding : $bytes');
-
-    flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
-        value: bytes);
-  }
-
-  void getVibrationPower() async {
-    String? foundDeviceId = await storage.read(key: DEVICE_ID);
-
-    final characteristic = QualifiedCharacteristic(
-      serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
-      characteristicId: Uuid.parse('00001F11-8835-40B6-8651-5691F8630806'),
-      deviceId: foundDeviceId!,
-    );
-
-    List<int> bytes = ascii.encode('VSR');
-    print('encoding : $bytes');
-
-    flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
-        value: bytes);
-  }
-
-  void getVibrationOperation() async {
-    String? foundDeviceId = await storage.read(key: DEVICE_ID);
-
-    final characteristic = QualifiedCharacteristic(
-      serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
-      characteristicId: Uuid.parse('00001F11-8835-40B6-8651-5691F8630806'),
-      deviceId: foundDeviceId!,
-    );
-
-    List<int> bytes = ascii.encode('VOR');
-    print('encoding : $bytes');
-
-    flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
-        value: bytes);
-  }
-
-  void getVibrationInrterval() async {
-    String? foundDeviceId = await storage.read(key: DEVICE_ID);
-
-    final characteristic = QualifiedCharacteristic(
-      serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
-      characteristicId: Uuid.parse('00001F11-8835-40B6-8651-5691F8630806'),
-      deviceId: foundDeviceId!,
-    );
-
-    List<int> bytes = ascii.encode('VIR');
     print('encoding : $bytes');
 
     flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
@@ -595,7 +546,7 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
         value: bytes);
   }
 
-  void getWalkCount() async {
+  Future getWalkCount() async {
     String? foundDeviceId = await storage.read(key: DEVICE_ID);
 
     final characteristic = QualifiedCharacteristic(
@@ -627,7 +578,7 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
         value: bytes);
   }
 
-  void getGrabPowerHigh() async {
+  void setGrabPower(int min, int max) async {
     String? foundDeviceId = await storage.read(key: DEVICE_ID);
 
     final characteristic = QualifiedCharacteristic(
@@ -636,27 +587,17 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
       deviceId: foundDeviceId!,
     );
 
-    List<int> bytes = ascii.encode('LHR');
-    print('encoding : $bytes');
+    List<int> bytes1 = ascii.encode('LL$min');
+    List<int> bytes2 = ascii.encode('LH$max');
+
+    print('encoding : $bytes1');
+    print('encoding : $bytes2');
 
     flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
-        value: bytes);
-  }
-
-  void getGrabPowerLow() async {
-    String? foundDeviceId = await storage.read(key: DEVICE_ID);
-
-    final characteristic = QualifiedCharacteristic(
-      serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
-      characteristicId: Uuid.parse('00001F11-8835-40B6-8651-5691F8630806'),
-      deviceId: foundDeviceId!,
-    );
-
-    List<int> bytes = ascii.encode('LLR');
-    print('encoding : $bytes');
+        value: bytes1);
 
     flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
-        value: bytes);
+        value: bytes2);
   }
 
   void getLoadCellInit() async {

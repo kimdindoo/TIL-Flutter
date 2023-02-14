@@ -8,3 +8,18 @@ final storage = FlutterSecureStorage();
 const DEVICE_ID = 'DEVICE_ID';
 
 const CONFIG_LIST = 'CONFIG_LIST';
+
+const DEVICE_BATTERY = 'DEVICE_BATTERY';
+
+class Grab {
+  static int loadCellLowValue = 0;
+  static int loadCellHighValue = 100;
+}
+
+class OnWalk {
+  static var count;
+}
+
+class Battery {
+  static var power;
+}
