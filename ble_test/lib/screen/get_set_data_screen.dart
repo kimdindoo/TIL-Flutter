@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:ble_test/common/data.dart';
 import 'package:ble_test/main.dart';
+import 'package:ble_test/screen/gyro_mode_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
@@ -231,18 +232,17 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
               child: Text('악력 값 설정'),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.cyan),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
               onPressed: () {
-                startGyro();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => GyroModeScreen(
+                    ),
+                  ),
+                );
               },
-              child: Text('자이로 모드 켜기'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.cyan),
-              onPressed: () {
-                stopGyro();
-              },
-              child: Text('자이로 모드 끄기'),
+              child: Text('자이로 모드 테스트 화면 이동'),
             ),
           ],
         ),
@@ -338,37 +338,7 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
     );
   }
 
-  void startGyro() async {
-    String? foundDeviceId = await storage.read(key: DEVICE_ID);
 
-    final characteristic = QualifiedCharacteristic(
-      serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
-      characteristicId: Uuid.parse('00001F11-8835-40B6-8651-5691F8630806'),
-      deviceId: foundDeviceId!,
-    );
-
-    List<int> bytes = ascii.encode('KS');
-    print('encoding : $bytes');
-
-    flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
-        value: bytes);
-  }
-
-  void stopGyro() async {
-    String? foundDeviceId = await storage.read(key: DEVICE_ID);
-
-    final characteristic = QualifiedCharacteristic(
-      serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
-      characteristicId: Uuid.parse('00001F11-8835-40B6-8651-5691F8630806'),
-      deviceId: foundDeviceId!,
-    );
-
-    List<int> bytes = ascii.encode('KT');
-    print('encoding : $bytes');
-
-    flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
-        value: bytes);
-  }
 
   void getPower() async {
     String? foundDeviceId = await storage.read(key: DEVICE_ID);

@@ -23,3 +23,10 @@ class OnWalk {
 class Battery {
   static var power;
 }
+
+class Gyro {
+  static var x;
+  static var y;
+
+  static List<int> dataXY = [0, 0];
+}
