@@ -68,10 +68,8 @@ class _MyAppState extends State<MyApp> {
             onPressed: () {
               print('ssetting cliked');
               Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) =>
-                      GetSetDataScreen(
-                          outCallback1: outCallback1,
-                          outCallback2: outCallback2)));
+                  builder: (_) => GetSetDataScreen(
+                      outCallback1: outCallback1, outCallback2: outCallback2)));
             },
           ),
         ],
@@ -82,10 +80,7 @@ class _MyAppState extends State<MyApp> {
           children: [
             // if(isChecked == true)
             SizedBox(
-              height: MediaQuery
-                  .of(context)
-                  .size
-                  .height,
+              height: MediaQuery.of(context).size.height,
               child: FoundDevice(),
             ),
           ],
@@ -131,7 +126,7 @@ class _FoundDeviceState extends State<FoundDevice> {
   Stream<List<DiscoveredDevice>> streamDeviceList() async* {
     flutterReactiveBle
         .scanForDevices(withServices: [], scanMode: ScanMode.lowLatency)
-    // .where((event) => event.name.contains('moozi_023'))
+        // .where((event) => event.name.contains('moozi_023'))
         .listen((device) {
       if (device.name.length > 2) {
         discoveredDeviceList.add(device);
@@ -263,11 +258,10 @@ class _FoundDeviceState extends State<FoundDevice> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              GetSetDataScreen(
-                outCallback1: outCallback1,
-                outCallback2: outCallback2,
-              ),
+          builder: (context) => GetSetDataScreen(
+            outCallback1: outCallback1,
+            outCallback2: outCallback2,
+          ),
         ),
       );
     });
@@ -331,131 +325,183 @@ class _FoundDeviceState extends State<FoundDevice> {
         characteristicId: Uuid.parse('00001F10-8835-40B6-8651-5691F8630806'),
         deviceId: foundDeviceId!);
     flutterReactiveBle.subscribeToCharacteristic(characteristic).listen(
-            (data) async {
-          print(data);
+        (data) async {
+      // print(data);
 
-          var decode = utf8.decode(data);
+      var decode = utf8.decode(data);
 
-          // 악력 없으면 로그 x - 테스트시 로그 지저분해서
-          // if (decode.substring(0, 1) == 'L' && 16267000 < int.parse(result)) {
-          //   return null;
-          // }
 
-          if (decode.substring(0, 1) == 'P') {
-            String result = decode.replaceAll(RegExp('\\D'), ""); // 정규식 숫자만
-            print('배터리 잔량 : $result');
 
-            Battery.power = result;
-          } else if (decode.substring(0, 1) == 'L') {
-            String result = decode.replaceAll(RegExp('\\D'), "");
+      if (decode.substring(0, 1) == 'P') {
+        String result = decode.replaceAll(RegExp('\\D'), ""); // 정규식 숫자만
+        print('배터리 잔량 : $result');
 
-            var low = 0.0;
-            var high = 0.0;
+        Battery.power = result;
+      } else if (decode.substring(0, 1) == 'L') {
+        String result = decode.replaceAll(RegExp('\\D'), "");
 
-            var loadCellInitVal = 16267000;
-            var loadCellMaxVal = 12600000;
+        // 악력 없으면 로그 x - 테스트시 로그 지저분해서
+        if (decode.substring(0, 1) == 'L' && 16267000 < int.parse(result)) {
+          return null;
+        }
 
-            if (Grab.loadCellLowValue + (100 - Grab.loadCellHighValue) <= 100) {
-              if (Grab.loadCellLowValue != 0) {
-                low = (loadCellInitVal - loadCellMaxVal).toDouble() *
-                    Grab.loadCellLowValue.toDouble() /
-                    100.0;
-              }
-              if (Grab.loadCellHighValue != 100) {
-                high = (loadCellInitVal - loadCellMaxVal).toDouble() *
-                    (100 - Grab.loadCellHighValue).toDouble() /
-                    100;
-              }
-            }
+        var low = 0.0;
+        var high = 0.0;
 
-            final maxValue = loadCellMaxVal.toDouble() + high;
-            final minValue = loadCellInitVal.toDouble() - low;
+        var loadCellInitVal = 16267000;
+        var loadCellMaxVal = 12600000;
 
-            double tempVal = double.parse(result);
-            var value = tempVal - maxValue;
-
-            var res = 1.0 - value / (minValue - maxValue);
-            if (res < 0.0) {
-              res = 0.0;
-            }
-            if (res > 1.0) {
-              res = 1.0;
-            }
-
-            double percentage = (res * 100.0 * 100).round() / 100.0;
-            double kg = (percentage / 2.0 * 100).round() / 100.0;
-            double lb = (kg * 2.2046 * 100) / 100.0;
-
-            print('악력 크기 : $percentage % $kg kg $lb lb');
-          } else if (decode.contains('C1')) {
-            print('구성 리스트 outCallback1 가져오기 성공');
-            print(decode);
-
-            print(decode.substring(3, 14));
-
-            String str = decode.substring(3, 14);
-
-            List<String> result = str.split(',');
-
-            print(result);
-
-            await prefs.setStringList('items', result);
-            outCallback1 = prefs.getStringList('items')!;
-          } else if (decode.contains('C2')) {
-            print('구성 리스트 outCallback2 가져오기 성공');
-
-            String str = decode.substring(3, 14);
-
-            List<String> result = str.split(',');
-
-            print(result);
-
-            await prefs.setStringList('items2', result);
-            outCallback2 = prefs.getStringList('items2')!;
-          } else if (decode.contains('S')) {
-            print('만보기 카운트 가져오기');
-            String result = decode.replaceAll(RegExp('\\D'), ""); // 정규식 숫자만
-            OnWalk.count = result;
-            print(result);
-          } else if (decode.substring(0, 1) == 'D') {
-            print('gyro 2D 값 가져오기');
-            String str = decode.substring(2, 11);
-            gyro = str.split(',');
-
-            print(' ## 1 x = ${gyro[0]} / y = ${gyro[1]}');
-
-            var deltaX = 0;
-            var deltaY = 0;
-            var state = 1;
-
-            var x = int.parse(gyro[0]);
-            var y = int.parse(gyro[1]);
-
-            if (deltaX.abs() < 5 && x.abs() > 5 ||
-                deltaY.abs() < 5 && y.abs() > 5) {
-              state = 0;
-            }
-            if (deltaX.abs() > 5 && x.abs() < 5 ||
-                deltaY.abs() > 5 && y.abs() < 5) {
-              state = 2;
-            }
-
-            deltaX = x;
-            deltaY = y;
-
-            Gyro.x = x;
-            Gyro.y = y;
-
-            Gyro.dataXY = [x,y];
-
-            print(' ## 2 x = $deltaX / y = $deltaY');
-          } else if (decode.substring(0, 2) == 'A[') {
-            print('A[');
-          } else if (decode.substring(0, 2) == 'G[') {
-            print('G[');
-          } else {
-            print('decoding : $decode');
+        if (Grab.loadCellLowValue + (100 - Grab.loadCellHighValue) <= 100) {
+          if (Grab.loadCellLowValue != 0) {
+            low = (loadCellInitVal - loadCellMaxVal).toDouble() *
+                Grab.loadCellLowValue.toDouble() /
+                100.0;
           }
-        }, onError: (dynamic error) {});
+          if (Grab.loadCellHighValue != 100) {
+            high = (loadCellInitVal - loadCellMaxVal).toDouble() *
+                (100 - Grab.loadCellHighValue).toDouble() /
+                100;
+          }
+        }
+
+        final maxValue = loadCellMaxVal.toDouble() + high;
+        final minValue = loadCellInitVal.toDouble() - low;
+
+        double tempVal = double.parse(result);
+        var value = tempVal - maxValue;
+
+        var res = 1.0 - value / (minValue - maxValue);
+        if (res < 0.0) {
+          res = 0.0;
+        }
+        if (res > 1.0) {
+          res = 1.0;
+        }
+
+        double percentage = (res * 100.0 * 100).round() / 100.0;
+        double kg = (percentage / 2.0 * 100).round() / 100.0;
+        double lb = (kg * 2.2046 * 100) / 100.0;
+
+        print('악력 크기 : $percentage % $kg kg $lb lb');
+      } else if (decode.substring(0, 1) == 'C1') {
+        print('구성 리스트 outCallback1 가져오기 성공');
+        print(decode);
+
+        print(decode.substring(3, 14));
+
+        String str = decode.substring(3, 14);
+
+        List<String> result = str.split(',');
+
+        print(result);
+
+        await prefs.setStringList('items', result);
+        outCallback1 = prefs.getStringList('items')!;
+      } else if (decode.substring(0, 1) == 'C2') {
+        print('구성 리스트 outCallback2 가져오기 성공');
+
+        String str = decode.substring(3, 14);
+
+        List<String> result = str.split(',');
+
+        print(result);
+
+        await prefs.setStringList('items2', result);
+        outCallback2 = prefs.getStringList('items2')!;
+      } else if (decode.contains('S')) {
+        print('만보기 카운트 가져오기');
+        String result = decode.replaceAll(RegExp('\\D'), ""); // 정규식 숫자만
+        OnWalk.count = result;
+        print(result);
+      } else if (decode.substring(0, 1) == 'D') {
+        // 2D 모드
+        String str = decode.substring(2, 11);
+        gyro = str.split(',');
+
+        var deltaX = 0;
+        var deltaY = 0;
+        var state = 1;
+
+        var x = int.parse(gyro[0]);
+        var y = int.parse(gyro[1]);
+
+        if (deltaX.abs() < 5 && x.abs() > 5 ||
+            deltaY.abs() < 5 && y.abs() > 5) {
+          state = 0;
+        }
+        if (deltaX.abs() > 5 && x.abs() < 5 ||
+            deltaY.abs() > 5 && y.abs() < 5) {
+          state = 2;
+        }
+
+        deltaX = x;
+        deltaY = y;
+
+        Gyro.x = x.toDouble();
+        Gyro.y = y.toDouble();
+
+        print('2D 모드 : x : ${Gyro.x} / y : ${Gyro.y}');
+
+          Gyro.dataXY = [x.toDouble(), y.toDouble()];
+      } else if (decode.substring(0, 2) == 'A[') {
+        String str = decode.substring(2, 16);
+        List list = str.split(',');
+
+        int x = twoCompleteToDecimal(list[0]);
+        int y = twoCompleteToDecimal(list[1]);
+        int z = twoCompleteToDecimal(list[2]);
+
+        // print(' A 일때 $list');
+        // print(' A 일때 x : $x / y : $y / z : $z ');
+
+        Gyro.acc_x = lsb_to_mps2(x, 2.0, 16);
+        Gyro.acc_y = lsb_to_mps2(y, 2.0, 16);
+        Gyro.acc_z = lsb_to_mps2(z, 2.0, 16);
+
+        // print('acc_x : ${Gyro.acc_x} / acc_y : ${Gyro.acc_y} / acc_z ${Gyro.acc_z}');
+
+        Gyro.accXYZ = [Gyro.acc_x, Gyro.acc_y, Gyro.acc_z];
+      } else if (decode.substring(0, 2) == 'G[') {
+        String str = decode.substring(2, 16);
+        List list = str.split(',');
+
+        int x = twoCompleteToDecimal(list[0]);
+        int y = twoCompleteToDecimal(list[1]);
+        int z = twoCompleteToDecimal(list[2]);
+
+        // print(' G 일때 $list');
+        // print(' G 일때 x : $x / y : $y / z : $z ');
+
+        Gyro.acc_x = lsb_to_mps2(x, 125.0, 16);
+        Gyro.acc_y = lsb_to_mps2(y, 125.0, 16);
+        Gyro.acc_z = lsb_to_mps2(z, 125.0, 16);
+
+        print('3D 모드 : acc_x : ${Gyro.acc_x} / acc_y : ${Gyro.acc_y} / acc_z ${Gyro.acc_z}');
+
+        Gyro.accXYZ = [Gyro.acc_x, Gyro.acc_y, Gyro.acc_z];
+      } else {
+        print('decoding : $decode');
+      }
+    }, onError: (dynamic error) {});
+  }
+
+  int twoCompleteToDecimal(String hexStr) {
+    int decimal = int.parse(hexStr, radix: 16);
+    if ((decimal & 0x8000) == 0) {
+      return decimal;
+    } else {
+      return ((~decimal + 0x01).toSigned(16) * -1);
+    }
+  }
+
+  double lsb_to_mps2(int loc, double g_range, int bit_width) {
+    double half_scale = (1 << bit_width) / 2.0;
+    return (Gyro.GRAVITY_EARTH * loc.toDouble() * g_range) / half_scale;
+  }
+
+  double lsb_to_dps(int loc, double dps, int bit_width) {
+    double half_scale = (1 << bit_width).toDouble() / 2.0;
+    return (dps / half_scale + Gyro.BMI2_GYR_RANGE_2000.toDouble()) *
+        loc.toDouble();
   }
 }

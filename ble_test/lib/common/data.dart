@@ -25,8 +25,16 @@ class Battery {
 }
 
 class Gyro {
-  static var x;
-  static var y;
+  static double x = 0.0;
+  static double y = 0.0;
 
-  static List<int> dataXY = [0, 0];
+  static double acc_x = 0.0;
+  static double acc_y = 0.0;
+  static double acc_z = 0.0;
+
+  static double GRAVITY_EARTH = 9.80665;
+  static int BMI2_GYR_RANGE_2000 = 0;
+
+  static List<double> dataXY = [0.0, 0.0];
+  static List<double> accXYZ = [0.0, 0.0, 0.0];
 }

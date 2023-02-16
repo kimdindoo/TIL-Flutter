@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:ble_test/common/ball.dart';
+import 'package:ble_test/common/ball_test.dart';
 import 'package:ble_test/common/data.dart';
 import 'package:ble_test/main.dart';
 import 'package:flutter/material.dart';
@@ -15,41 +17,63 @@ class GyroModeScreen extends StatelessWidget {
         title: Text('자이로모드 테스트'),
         backgroundColor: Colors.blueGrey,
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.cyan),
-            onPressed: () {
-              startGyro();
-            },
-            child: Text('자이로 모드 켜기'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.cyan),
-            onPressed: () {
-              stopGyro();
-              Gyro.dataXY = [0, 0];
-            },
-            child: Text('자이로 모드 끄기'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.cyan),
-            onPressed: () {
-              startGyro2D();
-            },
-            child: Text('자이로 모드 2D'),
-          ),
-          StreamGyroData(),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.cyan),
-            onPressed: () {
-              startGyro3D();
-            },
-            child: Text('자이로 모드 3D'),
-          ),
-          DnD(),
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Container(
+            //   height: 300,
+            //   color: Colors.amber,
+            //   child: CustomPaint(
+            //     painter: MyPainter(),
+            //     // foregroundPainter: MyForegroundPainter(),
+            //   ),
+            // ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.cyan),
+              onPressed: () {
+                startGyro();
+              },
+              child: Text('자이로 모드 켜기'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.cyan),
+              onPressed: () {
+                stopGyro();
+                Gyro.dataXY = [0, 0];
+              },
+              child: Text('자이로 모드 끄기'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.cyan),
+              onPressed: () {
+                startGyro2D();
+              },
+              child: Text('자이로 모드 2D'),
+            ),
+            StreamGyroData(),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.cyan),
+              onPressed: () {
+                startGyro3D();
+              },
+              child: Text('자이로 모드 3D'),
+            ),
+            StreamGyroData2(),
+            SizedBox(
+              height: 300,
+              child: ReflectBall(
+                ballRad: 20,
+                mapXsize: MediaQuery.of(context).size.width,
+                mapYsize: 300,
+                xPosition: 100,
+                yPosition: 200,
+                xSpeed: 1,
+                ySpeed: 1,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -156,23 +180,6 @@ class _StreamGyroDataState extends State<StreamGyroData> {
                 'x : ${snapshot.data![0]} / y : ${snapshot.data![1]}',
                 style: textStyle,
               ),
-              // 특정 영역만 Indicator 보이게
-              // Row(
-              //   children: [
-              //     Text(
-              //       'Data : ${snapshot.data}',
-              //       style: textStyle,
-              //     ),
-              //     if(snapshot.connectionState == ConnectionState.waiting)
-              //       CircularProgressIndicator(
-              //
-              //       ),
-              //   ],
-              // ),
-              Text(
-                'Error : ${snapshot.error}',
-                style: textStyle,
-              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -204,103 +211,70 @@ class _StreamGyroDataState extends State<StreamGyroData> {
   }
 }
 
-class DnD extends StatefulWidget {
-  DnD({Key? key}) : super(key: key);
+class StreamGyroData2 extends StatefulWidget {
+  const StreamGyroData2({Key? key}) : super(key: key);
 
   @override
-  State<DnD> createState() => _DnDState();
+  State<StreamGyroData2> createState() => _StreamGyroData2State();
 }
 
-class _DnDState extends State<DnD> {
-  dynamic _balls;
-
-  double xPos = 100;
-
-  double yPos = 100;
-
-  bool isClick = false;
-
-
-
+class _StreamGyroData2State extends State<StreamGyroData2> {
   @override
   Widget build(BuildContext context) {
-    _balls = _paint(
-      xPosition: xPos,
-      yPosition: yPos,
-      ballRad: 20,
-
+    final textStyle = TextStyle(
+      fontSize: 16.0,
     );
-
-
-
-    return GestureDetector(
-      onHorizontalDragDown: (details) {
-        setState(() {
-          if (_balls.isBallRegion(details.localPosition.dx, details.localPosition.dy)) {
-            isClick=true;
+    return StreamBuilder<List>(
+        stream: streamDataXYZ(),
+        builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
+          // print(snapshot);
+          if (!snapshot.hasData) {
+            return Container();
           }
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                '자이로 모드 좌표값',
+                style: textStyle.copyWith(
+                    fontWeight: FontWeight.w700, fontSize: 20.0),
+              ),
+              Text(
+                '수신 상태 : ${snapshot.connectionState}',
+                style: textStyle,
+              ),
+              Text(
+                'x : ${snapshot.data![0]} / y : ${snapshot.data![1]} / z : ${snapshot.data![2]}',
+                style: textStyle,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.cyan,
+                    ),
+                    onPressed: () {
+                      setState(() {});
+                    },
+                    child: Text('setState'),
+                  ),
+                ],
+              )
+            ],
+          );
         });
-      },
-      onHorizontalDragEnd: (details) {
-        setState(() {
-          isClick=false;
-        });
-      },
-      onHorizontalDragUpdate: (details) {
-        setState(() {
-          isClick=false;
-        });
-      },
-      child: Container(
-        width: 300,
-        height: 300,
-        color: Colors.lightBlueAccent,
-        child: CustomPaint(
-          painter: _balls,
-        ),
-      ),
-    );
   }
-}
 
-class _paint extends CustomPainter {
-  final xPosition;
-  final yPosition;
-  final ballRad;
+  Stream<List> streamDataXYZ() async* {
+    for (int i = 0; i < 10000000; i++) {
+      // if (i == 100) {
+      //   throw Exception('i == 100');
+      // }
+      await Future.delayed(Duration(seconds: 1));
 
-  // bool isBallRegion(double checkX, double checkY){
-  //   if((pow(xPosition-checkX, 2)+pow(yPosition-checkY, 2))<=pow(ballRad, 2)){
-  //     return true;
-  //   }
-  //   return false;
-  // }
-
-  _paint({
-    required this.xPosition,
-    required this.yPosition,
-    required this.ballRad,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    Paint paint = Paint()
-      ..color = Colors.indigoAccent
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-
-    Path path = Path();
-
-    for (double i = 0; i < ballRad - 1; i++) {
-      path.addOval(
-          Rect.fromCircle(center: Offset(xPosition, yPosition), radius: i));
+      yield Gyro.accXYZ;
     }
-    path.close();
-
-    canvas.drawPath(path, paint);
   }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => true;
-
-
 }
