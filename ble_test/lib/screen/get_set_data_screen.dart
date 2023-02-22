@@ -74,8 +74,7 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
                   onPressed: () {
                     print(Battery.power);
                     getPower();
@@ -231,14 +230,14 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
               },
               child: Text('악력 값 설정'),
             ),
+            StreamGrabPowerData(),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => GyroModeScreen(
-                    ),
+                    builder: (context) => GyroModeScreen(),
                   ),
                 );
               },
@@ -265,11 +264,16 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
                   onChanged: (val) {
                     setState(() {
                       _isChecked[index] = val!;
-
                       sendVibrationOption = _texts[index];
 
-                      print(sendVibrationOption);
-                      print(index);
+                      for (int i = 0; i < _texts.length; i++) {
+                        if (i != index) {
+                          _isChecked[i] = false;
+                        }
+                      }
+
+                      // print(sendVibrationOption);
+                      // print(index);
                     });
                   },
                 ),
@@ -337,8 +341,6 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
       ),
     );
   }
-
-
 
   void getPower() async {
     String? foundDeviceId = await storage.read(key: DEVICE_ID);
@@ -600,5 +602,59 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
 
     flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
         value: bytes);
+  }
+}
+
+class StreamGrabPowerData extends StatefulWidget {
+  const StreamGrabPowerData({Key? key}) : super(key: key);
+
+  @override
+  State<StreamGrabPowerData> createState() => _StreamGrabPowerDataState();
+}
+
+class _StreamGrabPowerDataState extends State<StreamGrabPowerData> {
+  @override
+  Widget build(BuildContext context) {
+    final textStyle = TextStyle(
+      fontSize: 16.0,
+    );
+    return StreamBuilder<List>(
+        stream: streamData(),
+        builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
+          // print(snapshot);
+          if (!snapshot.hasData) {
+            return Container();
+          }
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                '악력값',
+                style: textStyle.copyWith(
+                    fontWeight: FontWeight.w700, fontSize: 20.0),
+              ),
+              Text(
+                '수신 상태 : ${snapshot.connectionState}',
+                style: textStyle,
+              ),
+              Text(
+                '악력 크기 : ${snapshot.data![0]} % ${snapshot.data![1]} kg ${snapshot.data![2]} lb',
+                style: textStyle,
+              ),
+            ],
+          );
+        });
+  }
+
+  Stream<List> streamData() async* {
+    for (int i = 0; i < 10000000; i++) {
+      // if (i == 100) {
+      //   throw Exception('i == 100');
+      // }
+      await Future.delayed(Duration(seconds: 1));
+
+      yield Grab.grabPower;
+    }
   }
 }

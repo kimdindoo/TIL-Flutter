@@ -180,20 +180,6 @@ class _StreamGyroDataState extends State<StreamGyroData> {
                 'x : ${snapshot.data![0]} / y : ${snapshot.data![1]}',
                 style: textStyle,
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.cyan,
-                    ),
-                    onPressed: () {
-                      setState(() {});
-                    },
-                    child: Text('setState'),
-                  ),
-                ],
-              )
             ],
           );
         });
@@ -248,20 +234,6 @@ class _StreamGyroData2State extends State<StreamGyroData2> {
                 'x : ${snapshot.data![0]} / y : ${snapshot.data![1]} / z : ${snapshot.data![2]}',
                 style: textStyle,
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.cyan,
-                    ),
-                    onPressed: () {
-                      setState(() {});
-                    },
-                    child: Text('setState'),
-                  ),
-                ],
-              )
             ],
           );
         });

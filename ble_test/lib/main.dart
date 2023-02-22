@@ -329,8 +329,7 @@ class _FoundDeviceState extends State<FoundDevice> {
       // print(data);
 
       var decode = utf8.decode(data);
-
-
+      print(decode);
 
       if (decode.substring(0, 1) == 'P') {
         String result = decode.replaceAll(RegExp('\\D'), ""); // 정규식 숫자만
@@ -341,9 +340,9 @@ class _FoundDeviceState extends State<FoundDevice> {
         String result = decode.replaceAll(RegExp('\\D'), "");
 
         // 악력 없으면 로그 x - 테스트시 로그 지저분해서
-        if (decode.substring(0, 1) == 'L' && 16267000 < int.parse(result)) {
-          return null;
-        }
+        // if (decode.substring(0, 1) == 'L' && 16267000 < int.parse(result)) {
+        //   return null;
+        // }
 
         var low = 0.0;
         var high = 0.0;
@@ -378,11 +377,17 @@ class _FoundDeviceState extends State<FoundDevice> {
           res = 1.0;
         }
 
-        double percentage = (res * 100.0 * 100).round() / 100.0;
-        double kg = (percentage / 2.0 * 100).round() / 100.0;
-        double lb = (kg * 2.2046 * 100) / 100.0;
+        // double percentage = (res * 100.0 * 100).round() / 100.0;
+        // double kg = (percentage / 2.0 * 100).round() / 100.0;
+        // double lb = (kg * 2.2046 * 100) / 100.0;
 
-        print('악력 크기 : $percentage % $kg kg $lb lb');
+        Grab.percentage = (res * 100.0 * 100).round() / 100.0;
+        Grab.kg = (Grab.percentage / 2.0 * 100).round() / 100.0;
+        Grab.lb = (Grab.kg * 2.2046 * 100).round() / 100.0;
+
+        Grab.grabPower = [Grab.percentage, Grab.kg, Grab.lb];
+
+        print('악력 크기 : ${Grab.percentage} % ${Grab.kg} kg ${Grab.lb} lb');
       } else if (decode.substring(0, 1) == 'C1') {
         print('구성 리스트 outCallback1 가져오기 성공');
         print(decode);
@@ -442,7 +447,7 @@ class _FoundDeviceState extends State<FoundDevice> {
 
         print('2D 모드 : x : ${Gyro.x} / y : ${Gyro.y}');
 
-          Gyro.dataXY = [x.toDouble(), y.toDouble()];
+        Gyro.dataXY = [x.toDouble(), y.toDouble()];
       } else if (decode.substring(0, 2) == 'A[') {
         String str = decode.substring(2, 16);
         List list = str.split(',');
@@ -451,14 +456,20 @@ class _FoundDeviceState extends State<FoundDevice> {
         int y = twoCompleteToDecimal(list[1]);
         int z = twoCompleteToDecimal(list[2]);
 
-        // print(' A 일때 $list');
-        // print(' A 일때 x : $x / y : $y / z : $z ');
+        double acc_x = lsb_to_mps2(x, 2.0, 16);
+        double acc_y = lsb_to_mps2(y, 2.0, 16);
+        double acc_z = lsb_to_mps2(z, 2.0, 16);
 
-        Gyro.acc_x = lsb_to_mps2(x, 2.0, 16);
-        Gyro.acc_y = lsb_to_mps2(y, 2.0, 16);
-        Gyro.acc_z = lsb_to_mps2(z, 2.0, 16);
+        // Gyro.acc_x = lsb_to_mps2(x, 2.0, 16);
+        // Gyro.acc_y = lsb_to_mps2(y, 2.0, 16);
+        // Gyro.acc_z = lsb_to_mps2(z, 2.0, 16);
 
-        // print('acc_x : ${Gyro.acc_x} / acc_y : ${Gyro.acc_y} / acc_z ${Gyro.acc_z}');
+        Gyro.acc_x = ((acc_x * 1000) / 1000).toInt();
+        Gyro.acc_y = ((acc_y * 1000) / 1000).toInt();
+        Gyro.acc_z = ((acc_z * 1000) / 1000).toInt();
+
+        print(
+            '3D 모드 : acc_x : ${Gyro.acc_x} / acc_y : ${Gyro.acc_y} / acc_z ${Gyro.acc_z}');
 
         Gyro.accXYZ = [Gyro.acc_x, Gyro.acc_y, Gyro.acc_z];
       } else if (decode.substring(0, 2) == 'G[') {
@@ -469,14 +480,20 @@ class _FoundDeviceState extends State<FoundDevice> {
         int y = twoCompleteToDecimal(list[1]);
         int z = twoCompleteToDecimal(list[2]);
 
-        // print(' G 일때 $list');
-        // print(' G 일때 x : $x / y : $y / z : $z ');
+        double acc_x = lsb_to_mps2(x, 2.0, 16);
+        double acc_y = lsb_to_mps2(y, 2.0, 16);
+        double acc_z = lsb_to_mps2(z, 2.0, 16);
 
-        Gyro.acc_x = lsb_to_mps2(x, 125.0, 16);
-        Gyro.acc_y = lsb_to_mps2(y, 125.0, 16);
-        Gyro.acc_z = lsb_to_mps2(z, 125.0, 16);
+        // Gyro.acc_x = lsb_to_mps2(x, 2.0, 16);
+        // Gyro.acc_y = lsb_to_mps2(y, 2.0, 16);
+        // Gyro.acc_z = lsb_to_mps2(z, 2.0, 16);
 
-        print('3D 모드 : acc_x : ${Gyro.acc_x} / acc_y : ${Gyro.acc_y} / acc_z ${Gyro.acc_z}');
+        Gyro.acc_x = ((acc_x * 1000) / 1000).toInt();
+        Gyro.acc_y = ((acc_y * 1000) / 1000).toInt();
+        Gyro.acc_z = ((acc_z * 1000) / 1000).toInt();
+
+        print(
+            '3D 모드 : acc_x : ${Gyro.acc_x} / acc_y : ${Gyro.acc_y} / acc_z ${Gyro.acc_z}');
 
         Gyro.accXYZ = [Gyro.acc_x, Gyro.acc_y, Gyro.acc_z];
       } else {
