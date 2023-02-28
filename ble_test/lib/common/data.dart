@@ -31,16 +31,19 @@ class Battery {
 }
 
 class Gyro {
-  static double x = 0.0;
-  static double y = 0.0;
+  static int x = 0;
+  static int y = 0;
 
   static int acc_x = 0;
   static int acc_y = 0;
   static int acc_z = 0;
 
+  static int sumdx = 0;
+  static int sumdy = 0;
+
   static double GRAVITY_EARTH = 9.80665;
   static int BMI2_GYR_RANGE_2000 = 0;
 
-  static List<double> dataXY = [0.0, 0.0];
+  static List<int> dataXY = [0, 0];
   static List<int> accXYZ = [0, 0, 0];
 }

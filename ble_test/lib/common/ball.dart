@@ -141,8 +141,8 @@ class _ball extends CustomPainter {
           center: Offset(
             // Gyro.x + animationValue*xSpeed*xVector,
             // Gyro.y + animationValue*ySpeed*yVector,
-            200 + Gyro.x,
-            150 + Gyro.y,
+            200 + Gyro.x.toDouble(),
+            150 + Gyro.y.toDouble(),
           ),
           radius: i));
     }

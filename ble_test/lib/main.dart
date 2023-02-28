@@ -23,8 +23,6 @@ List<DiscoveredDevice> uniqueDeviceList = [];
 
 List<String> gyro = [];
 
-bool isChecked = false;
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -143,6 +141,7 @@ class _FoundDeviceState extends State<FoundDevice> {
     // Timer(Duration(seconds: 5), () => _subscription!.cancel());
 
     for (int i = 0; i <= 5; i++) {
+      // 5초 동안 블루투스 기기 검색
       // if (i == 10) {
       //   throw Exception('i == 5');
       // }
@@ -193,12 +192,12 @@ class _FoundDeviceState extends State<FoundDevice> {
               getConfigList();
               getPower();
               getWalkCount();
-              // print('#### 다음 페이지 이동 ####');
-              _showDialog();
+              // 다음페이지 이동 팝업
+              _showSuccessDialog();
               _movePage();
             } else if (connectionState.connectionState ==
                 DeviceConnectionState.disconnected) {
-              _showDialog2();
+              _showFailDialog();
             }
           }, onError: (Object error) {});
         },
@@ -207,7 +206,7 @@ class _FoundDeviceState extends State<FoundDevice> {
     );
   }
 
-  void _showDialog2() {
+  void _showFailDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -226,28 +225,13 @@ class _FoundDeviceState extends State<FoundDevice> {
     );
   }
 
-  void _showDialog() {
+  void _showSuccessDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text("연결 성공"),
           content: Text("설정하면으로 이동합니다."),
-          // actions: <Widget>[
-          // TextButton(
-          //   child: Text("이동"),
-          //   onPressed: () {
-          //     _movePage();
-          //   },
-          // ),
-          // TextButton(
-          //   child: Text("연결취소"),
-          //   onPressed: ()  {
-          //      _subscription!.cancel();
-          //     Navigator.pop(context);
-          //   },
-          // ),
-          // ],
         );
       },
     );
@@ -377,10 +361,6 @@ class _FoundDeviceState extends State<FoundDevice> {
           res = 1.0;
         }
 
-        // double percentage = (res * 100.0 * 100).round() / 100.0;
-        // double kg = (percentage / 2.0 * 100).round() / 100.0;
-        // double lb = (kg * 2.2046 * 100) / 100.0;
-
         Grab.percentage = (res * 100.0 * 100).round() / 100.0;
         Grab.kg = (Grab.percentage / 2.0 * 100).round() / 100.0;
         Grab.lb = (Grab.kg * 2.2046 * 100).round() / 100.0;
@@ -388,114 +368,82 @@ class _FoundDeviceState extends State<FoundDevice> {
         Grab.grabPower = [Grab.percentage, Grab.kg, Grab.lb];
 
         print('악력 크기 : ${Grab.percentage} % ${Grab.kg} kg ${Grab.lb} lb');
-      } else if (decode.substring(0, 1) == 'C1') {
+      } else if (decode.substring(0, 2) == 'C1') {
         print('구성 리스트 outCallback1 가져오기 성공');
-        print(decode);
-
-        print(decode.substring(3, 14));
-
         String str = decode.substring(3, 14);
-
         List<String> result = str.split(',');
-
         print(result);
 
         await prefs.setStringList('items', result);
         outCallback1 = prefs.getStringList('items')!;
-      } else if (decode.substring(0, 1) == 'C2') {
+      } else if (decode.substring(0, 2) == 'C2') {
         print('구성 리스트 outCallback2 가져오기 성공');
-
         String str = decode.substring(3, 14);
-
         List<String> result = str.split(',');
-
         print(result);
 
         await prefs.setStringList('items2', result);
         outCallback2 = prefs.getStringList('items2')!;
-      } else if (decode.contains('S')) {
+      } else if (decode.substring(0, 1) == 'S') {
         print('만보기 카운트 가져오기');
         String result = decode.replaceAll(RegExp('\\D'), ""); // 정규식 숫자만
         OnWalk.count = result;
         print(result);
       } else if (decode.substring(0, 1) == 'D') {
         // 2D 모드
-        String str = decode.substring(2, 11);
-        gyro = str.split(',');
+
+        var state = 1;
+        if (decode.substring(0, 2) == 'D[') {
+          // 움직이는 동안
+          state = 1;
+        } else if (decode.substring(0, 2) == 'DS') {
+          // 움직이기 시작할때
+          state = 0;
+        } else if (decode.substring(0, 2) == 'DE') {
+          // 움직임이 멈출때
+          state = 2;
+        }
+
+        var temp = decode.split('[');
+        var temp2 = temp[1].split("]");
+        var substr = temp2[0];
+        var array = substr.split(",");
+
+        var x = int.parse(array[0]);
+        var y = int.parse(array[1]);
 
         var deltaX = 0;
         var deltaY = 0;
-        var state = 1;
-
-        var x = int.parse(gyro[0]);
-        var y = int.parse(gyro[1]);
 
         if (deltaX.abs() < 5 && x.abs() > 5 ||
             deltaY.abs() < 5 && y.abs() > 5) {
           state = 0;
+          print(' ###### state : $state');
         }
         if (deltaX.abs() > 5 && x.abs() < 5 ||
             deltaY.abs() > 5 && y.abs() < 5) {
           state = 2;
+          print(' ###### state : $state');
         }
 
         deltaX = x;
         deltaY = y;
 
-        Gyro.x = x.toDouble();
-        Gyro.y = y.toDouble();
+        Gyro.x = x;
+        Gyro.y = y;
 
         print('2D 모드 : x : ${Gyro.x} / y : ${Gyro.y}');
 
-        Gyro.dataXY = [x.toDouble(), y.toDouble()];
+        Gyro.dataXY = [x, y];
+
+        // onDeltaXY(x, y, state);
+
       } else if (decode.substring(0, 2) == 'A[') {
-        String str = decode.substring(2, 16);
-        List list = str.split(',');
-
-        int x = twoCompleteToDecimal(list[0]);
-        int y = twoCompleteToDecimal(list[1]);
-        int z = twoCompleteToDecimal(list[2]);
-
-        double acc_x = lsb_to_mps2(x, 2.0, 16);
-        double acc_y = lsb_to_mps2(y, 2.0, 16);
-        double acc_z = lsb_to_mps2(z, 2.0, 16);
-
-        // Gyro.acc_x = lsb_to_mps2(x, 2.0, 16);
-        // Gyro.acc_y = lsb_to_mps2(y, 2.0, 16);
-        // Gyro.acc_z = lsb_to_mps2(z, 2.0, 16);
-
-        Gyro.acc_x = ((acc_x * 1000) / 1000).toInt();
-        Gyro.acc_y = ((acc_y * 1000) / 1000).toInt();
-        Gyro.acc_z = ((acc_z * 1000) / 1000).toInt();
-
-        print(
-            '3D 모드 : acc_x : ${Gyro.acc_x} / acc_y : ${Gyro.acc_y} / acc_z ${Gyro.acc_z}');
-
-        Gyro.accXYZ = [Gyro.acc_x, Gyro.acc_y, Gyro.acc_z];
+        // 3D 모드
+        processAcc(decode);
       } else if (decode.substring(0, 2) == 'G[') {
-        String str = decode.substring(2, 16);
-        List list = str.split(',');
-
-        int x = twoCompleteToDecimal(list[0]);
-        int y = twoCompleteToDecimal(list[1]);
-        int z = twoCompleteToDecimal(list[2]);
-
-        double acc_x = lsb_to_mps2(x, 2.0, 16);
-        double acc_y = lsb_to_mps2(y, 2.0, 16);
-        double acc_z = lsb_to_mps2(z, 2.0, 16);
-
-        // Gyro.acc_x = lsb_to_mps2(x, 2.0, 16);
-        // Gyro.acc_y = lsb_to_mps2(y, 2.0, 16);
-        // Gyro.acc_z = lsb_to_mps2(z, 2.0, 16);
-
-        Gyro.acc_x = ((acc_x * 1000) / 1000).toInt();
-        Gyro.acc_y = ((acc_y * 1000) / 1000).toInt();
-        Gyro.acc_z = ((acc_z * 1000) / 1000).toInt();
-
-        print(
-            '3D 모드 : acc_x : ${Gyro.acc_x} / acc_y : ${Gyro.acc_y} / acc_z ${Gyro.acc_z}');
-
-        Gyro.accXYZ = [Gyro.acc_x, Gyro.acc_y, Gyro.acc_z];
+        // 3D 모드
+        processGyro(decode);
       } else {
         print('decoding : $decode');
       }
@@ -520,5 +468,131 @@ class _FoundDeviceState extends State<FoundDevice> {
     double half_scale = (1 << bit_width).toDouble() / 2.0;
     return (dps / half_scale + Gyro.BMI2_GYR_RANGE_2000.toDouble()) *
         loc.toDouble();
+  }
+
+  //2D
+  // void onDeltaXY(int x, int y, int state) {
+  //
+  //   print('state : $state');
+  //
+  //   // if (state == 0) {
+  //   //   Gyro.sumdx = 0;
+  //   //   Gyro.sumdy = 0;
+  //   // } else if (state == 2) {
+  //   //
+  //   // } else {
+  //   //   Gyro.sumdx += x;
+  //   //   Gyro.sumdy += y;
+  //   // }
+  //
+  //   Gyro.sumdx += x;
+  //   Gyro.sumdy += y;
+  //
+  //   print("x: $x y: $y");
+  //   print("sumdx: ${Gyro.sumdx} sumdy: ${Gyro.sumdy}");
+  //
+  // }
+
+  //3D A[] 데이터 수신할때
+  void processAcc(String decode) {
+    // String str = decode.substring(2, 16);
+    List list = decode.split(',');
+
+    int x = 0;
+    int y = 0;
+    int z = 0;
+    String d = '';
+
+    if (list.length == 3) {
+      x = twoCompleteToDecimal(list[0].substring(2));
+      y = twoCompleteToDecimal(list[1]);
+      z = twoCompleteToDecimal(list[2].substring(0, 4));
+      d = '0';
+
+      print('x : ' + list[0].substring(2));
+      print('y : ' + list[1]);
+      print('z : ' + list[2].substring(0, 4));
+    } else {
+      x = twoCompleteToDecimal(list[0]);
+      y = twoCompleteToDecimal(list[1]);
+      z = twoCompleteToDecimal(list[2]);
+      d = list[3].substring(0, 1);
+
+      // 이 else문 안온다...
+      print("!!!!!!!!!!!!! list.length > 3 !!!!!!!!!!!!!!");
+      print(d);
+    }
+
+    double acc_x = lsb_to_mps2(x, 2.0, 16);
+    double acc_y = lsb_to_mps2(y, 2.0, 16);
+    double acc_z = lsb_to_mps2(z, 2.0, 16);
+
+    onAccelerometer(acc_x, acc_y, acc_z, d);
+  }
+
+  void onAccelerometer(double x, double y, double z, String state) {
+    x = (x * 1000).round() / 1000;
+    y = (y * 1000).round() / 1000;
+    z = (z * 1000).round() / 1000;
+
+    if (state == '0') {
+      x = x - 10.0;
+      print("!!!!!!!!!!!!! 여기만 온다 !!!!!!!!!!!!!!");
+    } else if (state == '1') {
+      x = x + 10.0;
+      print("!!!!!!!!!!!!! 여기 안온다 !!!!!!!!!!!!!!");
+    } else if (state == '2') {
+      y = y - 10.0;
+      print("!!!!!!!!!!!!! 여기 안온다 !!!!!!!!!!!!!!");
+    } else if (state == '3') {
+      y = y + 10.0;
+      print("!!!!!!!!!!!!! 여기 안온다 !!!!!!!!!!!!!!");
+    } else if (state == '4') {
+      z = z - 10.0;
+      print("!!!!!!!!!!!!! 여기 안온다 !!!!!!!!!!!!!!");
+    } else if (state == '5') {
+      z = z + 10.0;
+      print("!!!!!!!!!!!!! 여기 안온다 !!!!!!!!!!!!!!");
+    }
+
+    Gyro.acc_x = x.toInt();
+    Gyro.acc_y = y.toInt();
+    Gyro.acc_z = z.toInt();
+
+    Gyro.accXYZ = [Gyro.acc_x, Gyro.acc_y, Gyro.acc_z];
+
+    print(
+        '3D 모드 : acc_x : ${Gyro.acc_x} / acc_y : ${Gyro.acc_y} / acc_z ${Gyro.acc_z}');
+  }
+
+  //3D G[] 데이터 수신할때
+  void processGyro(String decode) {
+    String str = decode.substring(2, 16);
+    List list = str.split(',');
+
+    int x = twoCompleteToDecimal(list[0]);
+    int y = twoCompleteToDecimal(list[1]);
+    int z = twoCompleteToDecimal(list[2]);
+
+    double acc_x = lsb_to_dps(x, 125.0, 16);
+    double acc_y = lsb_to_dps(y, 125.0, 16);
+    double acc_z = lsb_to_dps(z, 125.0, 16);
+
+    onGyroscope(acc_x, acc_y, acc_z);
+  }
+
+  void onGyroscope(double x, double y, double z) {
+    x = (x * 1000).round() / 1000;
+    y = (y * 1000).round() / 1000;
+    z = (z * 1000).round() / 1000;
+
+    Gyro.acc_x = x.toInt();
+    Gyro.acc_y = y.toInt();
+    Gyro.acc_z = z.toInt();
+
+    Gyro.accXYZ = [Gyro.acc_x, Gyro.acc_y, Gyro.acc_z];
+
+    print(
+        '3D 모드 : acc_x : ${Gyro.acc_x} / acc_y : ${Gyro.acc_y} / acc_z ${Gyro.acc_z}');
   }
 }

@@ -232,6 +232,13 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
             ),
             StreamGrabPowerData(),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+              onPressed: (){
+                getLoadCellInit();
+              },
+              child: Text('악력 측정(정확한 측정위해 로드셀 초기값 얻기)'),
+            ),
+            ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
               onPressed: () {
                 Navigator.push(
@@ -544,6 +551,22 @@ class _GetDataScreenState extends State<GetSetDataScreen> {
     );
 
     List<int> bytes = ascii.encode('SS');
+    print('encoding : $bytes');
+
+    flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
+        value: bytes);
+  }
+
+  void GetLoadCellInit() async {
+    String? foundDeviceId = await storage.read(key: DEVICE_ID);
+
+    final characteristic = QualifiedCharacteristic(
+      serviceId: Uuid.parse('00001F00-8835-40B6-8651-5691F8630806'),
+      characteristicId: Uuid.parse('00001F11-8835-40B6-8651-5691F8630806'),
+      deviceId: foundDeviceId!,
+    );
+
+    List<int> bytes = ascii.encode('LI');
     print('encoding : $bytes');
 
     flutterReactiveBle.writeCharacteristicWithoutResponse(characteristic,
