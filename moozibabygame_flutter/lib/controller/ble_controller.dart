@@ -8,27 +8,38 @@ class BleController extends GetxController {
   var bleName = ''.obs;
   var bleId = ''.obs;
 
-  var grabPower = 0.0.obs;
+  var grabPower = 0.obs;
 
-  var babayImage = 1.obs;
+  var babyImage = 1.obs;
+  var backgroundImage = 3.obs;
+  var starImage = 'green'.obs;
+
+  var gyroX = 0.obs;
+  var gyroY = 0.obs;
 
   @override
   void onInit() {
-    ever(grabPower, (_) => setImage(grabPower.value));
+    ever(grabPower, (_) => changeImage());
     super.onInit();
   }
 
-  void setImage(double power) {
-    if(power > 0.0) {
-      babayImage = 1.obs;
-      print(babayImage.value);
-    } else if (power > 5.0) {
-      babayImage = 2.obs;
-      print(babayImage.value);
-    } else if (power > 8.0) {
-      babayImage = 3.obs;
+  void changeImage() {
+    if (grabPower.value == 0) {
+      babyImage.value = 1;
+      backgroundImage.value = 3;
+      starImage = 'green'.obs;
+    } else if (0 < grabPower.value && grabPower.value <= 2) {
+      babyImage.value = 2;
+      backgroundImage.value = 4;
+      starImage = 'yellow'.obs;
+    } else if (2 < grabPower.value && grabPower.value <= 4) {
+      babyImage.value = 3;
+      backgroundImage.value = 5;
+      starImage = 'pink'.obs;
     } else {
-      babayImage = 4.obs;
+      babyImage.value = 4;
+      backgroundImage.value = 6;
+      starImage = 'effect'.obs;
     }
   }
 }

@@ -40,21 +40,16 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+class HomeScreen extends StatelessWidget {
+  HomeScreen({Key? key}) : super(key: key);
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/bbBg1.png'),
+            image: AssetImage('assets/bb_bg_1.png'),
             fit: BoxFit.fill,
           ),
         ),
@@ -128,7 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 60.h,
             ),
             Image.asset(
-              'assets/logoMoozi.png',
+              'assets/logo_moozi.png',
               height: 45.h,
             ),
             SizedBox(
@@ -156,51 +151,52 @@ void _scanForDevices() {
           print('블루투스 검색 성공 연결시도');
           _connectToDevice();
         }
+      }, onError: (error) {
+        print('에러 메세지 : ${error.toString()}');
       });
 }
 
-void _connectToDevice() {
+Future<void> _connectToDevice() async {
   flutterReactiveBle
       .connectToDevice(
     id: BleController.to.bleId.value,
-    connectionTimeout: const Duration(seconds: 10),
+    connectionTimeout: const Duration(seconds: 20),
     // withServices: [],
     // prescanDuration: const Duration(seconds: 5),
   )
-      .listen((connectionState) async {
-    print(connectionState.connectionState);
+      .listen(
+    (connectionState) async {
+      print(connectionState.connectionState);
 
-    switch (connectionState.connectionState) {
-      case DeviceConnectionState.connected:
-        //do something for connected state
-        BleController.to.bleLoading.value = false;
-        print(BleController.to.bleLoading.value);
-        print('연결 성공');
-        bleResponse();
-        await Future.delayed(Duration(milliseconds: 1000));
-        Get.to(() => gameScreen());
-        break;
-      case DeviceConnectionState.disconnected:
-        //do something for disconnected state
-        print('연결 실패');
-        _connectToDevice();
-        break;
-      case DeviceConnectionState.connecting:
-        //do something for connecting state
-        BleController.to.bleLoading.value = true;
-        print(BleController.to.bleLoading.value);
-        print('연결중');
-        break;
-      case DeviceConnectionState.disconnecting:
-        //do something for connecting state
-        print('연결 실패중');
-        break;
-    }
-
-    if (connectionState.connectionState == DeviceConnectionState.connected) {
-      print('연결 성공');
-    }
-  });
+      switch (connectionState.connectionState) {
+        case DeviceConnectionState.connected:
+          //do something for connected state
+          BleController.to.bleLoading.value = true;
+          print(BleController.to.bleLoading.value);
+          print('연결 성공');
+          bleResponse();
+          await Future.delayed(Duration(milliseconds: 1000));
+          Get.to(() => gameScreen());
+          break;
+        case DeviceConnectionState.disconnected:
+          //do something for disconnected state
+          print('연결 실패');
+          break;
+        case DeviceConnectionState.connecting:
+          //do something for connecting state
+          print('연결중');
+          break;
+        case DeviceConnectionState.disconnecting:
+          //do something for connecting state
+          print('연결 실패중');
+          break;
+      }
+    },
+    onError: (error) {
+      print('에러 메세지 : ${error.toString()}');
+      _connectToDevice();
+    },
+  );
 }
 
 void bleResponse() async {
@@ -213,7 +209,7 @@ void bleResponse() async {
     // print(data);
 
     var decode = utf8.decode(data);
-    print(decode);
+    // print(decode);
 
     if (decode.substring(0, 1) == 'P') {
       String result = decode.replaceAll(RegExp('\\D'), ""); // 정규식 숫자만
@@ -261,7 +257,8 @@ void bleResponse() async {
         res = 1.0;
       }
 
-      BleController.to.grabPower.value = (res * 100.0 * 100).round() / 100.0;
+      BleController.to.grabPower.value =
+          ((res * 100.0 * 100).round() / 100.0).round().toInt();
 
       Grab.percentage = (res * 100.0 * 100).round() / 100.0;
       Grab.kg = (Grab.percentage / 2.0 * 100).round() / 100.0;
@@ -270,6 +267,8 @@ void bleResponse() async {
       Grab.grabPower = [Grab.percentage, Grab.kg, Grab.lb];
 
       print('악력 크기 : ${Grab.percentage} % ${Grab.kg} kg ${Grab.lb} lb');
+      print(
+          'BleController.to.grabPower.value : ${BleController.to.grabPower.value}');
     } else if (decode.substring(0, 2) == 'C1') {
       print('구성 리스트 outCallback1 가져오기 성공');
       String str = decode.substring(3, 14);
@@ -325,6 +324,9 @@ void bleResponse() async {
 
       Gyro.x = x;
       Gyro.y = y;
+
+      BleController.to.gyroX.value = x;
+      BleController.to.gyroY.value = y;
 
       print('2D 모드 : x : ${Gyro.x} / y : ${Gyro.y}');
 
