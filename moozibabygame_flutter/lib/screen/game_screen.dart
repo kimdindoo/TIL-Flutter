@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:moozibabygame_flutter/controller/ble_controller.dart';
+import 'package:moozibabygame_flutter/util/fade_transition.dart';
 
 class gameScreen extends StatelessWidget {
   const gameScreen({Key? key}) : super(key: key);
@@ -33,7 +34,7 @@ class gameScreen extends StatelessWidget {
                       top: 50.h,
                       left: 30.w,
                       child: Image.asset(
-                        BleController.to.starImage != 'effect'
+                        BleController.to.starImage.value != 'effect'
                             ? 'assets/star_${BleController.to.starImage.value}_1.png'
                             : 'assets/${BleController.to.starImage.value}.png',
                       ),
@@ -42,7 +43,7 @@ class gameScreen extends StatelessWidget {
                       top: 150.h,
                       right: 5.w,
                       child: Image.asset(
-                        BleController.to.starImage != 'effect'
+                        BleController.to.starImage.value != 'effect'
                             ? 'assets/star_${BleController.to.starImage.value}_2.png'
                             : 'assets/${BleController.to.starImage.value}.png',
                         height: 100.h,
@@ -53,7 +54,7 @@ class gameScreen extends StatelessWidget {
                       top: 300.h,
                       left: 5.w,
                       child: Image.asset(
-                        BleController.to.starImage != 'effect'
+                        BleController.to.starImage.value != 'effect'
                             ? 'assets/star_${BleController.to.starImage.value}_3.png'
                             : 'assets/${BleController.to.starImage.value}.png',
                         height: 100.h,
@@ -86,7 +87,7 @@ class gameScreen extends StatelessWidget {
                       bottom: 50.h,
                       left: 0,
                       right: 0,
-                      child: Image.asset('assets/invalidName.png'),
+                      child: MyStatefulWidget(),
                     ),
                   ],
                 ),
