@@ -2,17 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:moozibabygame_flutter/controller/ble_controller.dart';
-import 'package:moozibabygame_flutter/util/fade_transition.dart';
+import 'package:moozibabygame_flutter/util/baby_rotation.dart';
+import 'package:moozibabygame_flutter/util/explaintion_fade_transition.dart';
 
-class gameScreen extends StatelessWidget {
-  const gameScreen({Key? key}) : super(key: key);
+class GameScreen extends StatelessWidget {
+  const GameScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     Get.put(BleController());
-
-    var sumX = 0;
-    var sumY = 0;
 
     return Obx(
       () => Scaffold(
@@ -61,34 +59,26 @@ class gameScreen extends StatelessWidget {
                         width: 70.w,
                       ),
                     ),
-                    Positioned(
-                      bottom: 200.h + BleController.to.gyroY.value.toDouble(),
-                      left: 0 + BleController.to.gyroX.value.toDouble(),
-                      right: 0,
-                      child: Image.asset(
-                        'assets/baby_${BleController.to.babyImage.value}.png',
-                        height: 350.h,
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 200.h,
-                      left: 0,
-                      right: 0,
-                      child: Text(
-                        '${BleController.to.babyImage.value}',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 50.sp,
-                          color: Colors.green,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 50.h,
-                      left: 0,
-                      right: 0,
-                      child: MyStatefulWidget(),
-                    ),
+                    // // 맨아래 좌측 노란 별
+                    // Positioned(
+                    //   bottom: 0.h,
+                    //   left: 0.w,
+                    //   child: Image.asset(
+                    //     'assets/star_yellow_3.png',
+                    //   ),
+                    // ),
+                    // // 맨위 좌측 노란 별
+                    // Positioned(
+                    //   bottom: 765.h,
+                    //   left: 0.w,
+                    //   child: Image.asset(
+                    //     'assets/star_yellow_3.png',
+                    //   ),
+                    // ),
+                    BabyRotation(),
+                    BleController.to.explanation.value == true
+                        ? ExplaintionFade()
+                        : Container(),
                   ],
                 ),
               ),

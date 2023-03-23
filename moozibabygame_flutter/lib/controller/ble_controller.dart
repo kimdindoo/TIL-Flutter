@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'dart:ui' as ui;
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:moozibabygame_flutter/controller/moozi_controller.dart';
 import 'package:moozibabygame_flutter/util/constants.dart';
 import 'package:moozibabygame_flutter/data.dart';
-import 'package:moozibabygame_flutter/screen/game_screen.dart';
 
 class BleController extends GetxController {
   static BleController get to => Get.find();
@@ -25,14 +26,20 @@ class BleController extends GetxController {
   var backgroundImage = 3.obs;
   var starImage = 'green'.obs;
 
+  var babyImageLocationY = 230.obs;
+
   var gyroX = 0.obs;
   var gyroY = 0.obs;
+
+  var explanation = true.obs;
+  var baby = true.obs;
+  bool connecting = false;
 
   @override
   void onInit() {
     print('BleController Onit');
     Get.put(MooziController());
-    scanForDevices();
+    // scanForDevices();
 
     ever(grabPower, (_) => changeImage());
     super.onInit();
@@ -74,6 +81,14 @@ class BleController extends GetxController {
     //   sendData('VZ'); // 진동 울림
     //   sendData('KS');
     // }
+    if (grabPower.value != 0) {
+      explanation.value = false;
+      // baby.value = false;
+    } else {
+      explanation.value = true;
+      // baby.value = true;
+    }
+
     if (0 <= grabPower.value && grabPower.value <= 20) {
       babyImage.value = 1;
       backgroundImage.value = 3;
@@ -152,20 +167,28 @@ class BleController extends GetxController {
             // MooziController.to.getLoadCellInit();
             // MooziController.to.getLodadCellMiddle();
             await Future.delayed(Duration(milliseconds: 1000));
-            Get.to(() => gameScreen());
+            // Get.to(() => GameScreen());
             break;
           case DeviceConnectionState.disconnected:
             //do something for disconnected state
             print('연결 실패');
+            await Future.delayed(Duration(milliseconds: 3000));
             connectToDevice();
+            // if(!connecting && connectionState.connectionState == ConnectionStatus.connected){
+            //   connectToDevice();
+            // }
             break;
           case DeviceConnectionState.connecting:
             //do something for connecting state
             print('연결중');
+            // connecting = true;
             break;
           case DeviceConnectionState.disconnecting:
             //do something for connecting state
             print('연결 실패중');
+            // 시간 지연
+            await Future.delayed(Duration(milliseconds: 3000));
+            connectToDevice();
             break;
         }
       },
@@ -298,8 +321,50 @@ class BleController extends GetxController {
         Gyro.x = x;
         Gyro.y = y;
 
-        BleController.to.gyroX.value = x;
-        BleController.to.gyroY.value = y;
+        BleController.to.gyroX.value += x;
+        BleController.to.gyroY.value += y;
+
+        double deviceWidth =
+            ui.window.physicalSize.width / ui.window.devicePixelRatio;
+        double deviceheight =
+            ui.window.physicalSize.height / ui.window.devicePixelRatio;
+
+        print('sum X : ${BleController.to.gyroX.value}');
+
+        // if(state != 0) {
+        //   // 시간 지연
+        //   Future.delayed(Duration(milliseconds: 3000), () {
+        //     BleController.to.gyroX.value = 0;
+        //     BleController.to.gyroY.value = 0;
+        //   });
+        // }
+
+        if (BleController.to.gyroX.value < deviceWidth * -1) {
+          print(' ## ${BleController.to.gyroX}');
+          // BleController.to.gyroX.value = deviceWidth.toInt();
+          BleController.to.gyroX.value = 0;
+        }
+
+        if (BleController.to.gyroX.value > deviceWidth) {
+          print(' ## ${BleController.to.gyroX}');
+          // BleController.to.gyroX.value = deviceWidth.toInt();
+          BleController.to.gyroX.value = 0;
+        }
+
+        if (BleController.to.gyroY.value + 350.h.toInt() > deviceheight) {
+          print(' Gyro X : ${BleController.to.gyroY}');
+          BleController.to.gyroY.value = deviceheight.toInt() - 500.h.toInt();
+          print('deviceheight : $deviceheight');
+          // BleController.to.gyroY.value = 0;
+
+        }
+
+        if (BleController.to.gyroY.value - 350.h.toInt() < deviceheight * -1) {
+          print('Gryo Y : ${BleController.to.gyroY}');
+          print('deviceheight : ${deviceheight * -1}');
+          BleController.to.gyroY.value =
+              (deviceheight * -1).toInt() + 500.h.toInt();
+        }
 
         print('2D 모드 : x : ${Gyro.x} / y : ${Gyro.y}');
 

@@ -4,6 +4,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
 import 'package:moozibabygame_flutter/controller/ble_controller.dart';
 import 'package:moozibabygame_flutter/screen/game_screen.dart';
+import 'package:moozibabygame_flutter/util/logo_fade_transition.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 void main() async {
@@ -19,6 +20,7 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
@@ -65,7 +67,7 @@ class HomeScreen extends StatelessWidget {
               height: 75.h,
             ),
             Obx(
-              () => BleController.to.bleLoading.value == true
+              () => BleController.to.bleLoading == true
                   ? Container(
                       height: 325.h,
                       decoration: BoxDecoration(
@@ -83,7 +85,7 @@ class HomeScreen extends StatelessWidget {
                           itemBuilder: (BuildContext context, int index) {
                             return ListTile(
                               onTap: () {
-                                Get.to(() => gameScreen());
+                                Get.to(() => GameScreen());
                               },
                               title: Text(
                                 '${BleController.to.bleName.value}',
@@ -105,18 +107,15 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                     )
-                  : SpinKitCircle(
-                      color: Colors.green,
-                      size: 200.h,
+                  : Container(
+                      height: 325.h,
                     ),
             ),
-            SizedBox(
-              height: 60.h,
-            ),
-            Image.asset(
-              'assets/logo_moozi.png',
-              height: 45.h,
-            ),
+            logoFade(),
+            // Image.asset(
+            //   'assets/logo_moozi.png',
+            //   height: 45.h,
+            // ),
             SizedBox(
               height: 15.h,
             ),
