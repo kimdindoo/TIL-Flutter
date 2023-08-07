@@ -17,7 +17,7 @@ class ShoppingListNotifier extends StateNotifier<List<ShoppingItemModel>> {
               isSpicy: true,
             ),
             ShoppingItemModel(
-              name: '라면',
+              name: '김치찌개',
               quantity: 5,
               hasBought: false,
               isSpicy: true,
