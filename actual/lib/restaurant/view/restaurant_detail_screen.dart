@@ -1,14 +1,12 @@
-import 'package:actual/common/const/data.dart';
-import 'package:actual/common/dio/dio.dart';
 import 'package:actual/common/layout/defalut_layout.dart';
 import 'package:actual/product/component/product_card.dart';
 import 'package:actual/restaurant/component/restaurant_card.dart';
 import 'package:actual/restaurant/model/restaurant_detail_model.dart';
 import 'package:actual/restaurant/repository/restaurant_repository.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class RestaurantDetailScreen extends StatelessWidget {
+class RestaurantDetailScreen extends ConsumerWidget {
   final String id;
 
   const RestaurantDetailScreen({
@@ -16,28 +14,26 @@ class RestaurantDetailScreen extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
-  Future<RestaurantDetailModel> getRestaurantDetail() async {
-    final dio = Dio();
+  Future<RestaurantDetailModel> getRestaurantDetail(WidgetRef ref) async {
+    // final dio = ref.watch(dioProvider);
 
-    dio.interceptors.add(
-      CustomInterceptor(
-        storage: storage,
-      ),
-    );
+    // final repository = RestaurantRepository(dio, baseUrl: 'http://$ip/restaurant');
 
-    final repository = RestaurantRepository(dio, baseUrl: 'http://$ip/restaurant');
+    // return repository.getRestaurantDetail(id: id);
 
-    return repository.getRestaurantDetail(id: id);
+    return ref.watch(RestaurantRepositoryProvider).getRestaurantDetail(id: id);
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return DefaultLayout(
         title: '불타는 떡볶이',
         child: FutureBuilder<RestaurantDetailModel>(
-          future: getRestaurantDetail(),
+          future: ref
+              .watch(RestaurantRepositoryProvider)
+              .getRestaurantDetail(id: id),
           builder: (_, AsyncSnapshot<RestaurantDetailModel> snapshot) {
-            if(snapshot.hasError){
+            if (snapshot.hasError) {
               return Center(
                 child: Text(snapshot.error.toString()),
               );
