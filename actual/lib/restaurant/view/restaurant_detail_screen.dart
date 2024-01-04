@@ -1,5 +1,6 @@
 import 'package:actual/common/layout/defalut_layout.dart';
 import 'package:actual/product/component/product_card.dart';
+import 'package:actual/rating/component/rating_card.dart';
 import 'package:actual/restaurant/component/restaurant_card.dart';
 import 'package:actual/restaurant/model/restaurant_detail_model.dart';
 import 'package:actual/restaurant/model/restaurant_model.dart';
@@ -62,6 +63,18 @@ class _RestaurantDetailScreenState
             renderProducts(
               products: state.products,
             ),
+          const SliverPadding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            sliver: SliverToBoxAdapter(
+              child: RatingCard(
+                rating: 4,
+                email: 'js@codefactory.ai',
+                images: [],
+                avatarImage: AssetImage('asset/img/logo/codefactory_logo.png'),
+                content: '맛있습니다.',
+              ),
+            ),
+          ),
         ],
       ),
     );
