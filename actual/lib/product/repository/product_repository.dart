@@ -13,7 +13,7 @@ part 'product_repository.g.dart';
 
 final productRepositoryProvider = Provider<ProductRepository>((ref) {
   final dio = ref.read(dioProvider);
-  return ProductRepository(dio, baseUrl: 'http://$ip/product ');
+  return ProductRepository(dio, baseUrl: 'http://$ip/product');
 });
 
 // http://$ip/product

@@ -3,7 +3,7 @@ import 'package:actual/common/layout/defalut_layout.dart';
 import 'package:actual/restaurant/view/restaurant_screen.dart';
 import 'package:flutter/material.dart';
 
-import '../../product/view/product_tab.dart';
+import '../../product/view/product_screen.dart';
 
 class RootTab extends StatefulWidget {
   const RootTab({Key? key}) : super(key: key);
@@ -76,8 +76,8 @@ class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
         physics: const NeverScrollableScrollPhysics(),
         controller: controller,
         children: [
-          const RestaurantScreen(),
-          const ProductTab(),
+          RestaurantScreen(),
+          ProductScreen(),
           Center(child: Container(child: const Text('주문'))),
           Center(child: Container(child: const Text('프로필'))),
         ],
