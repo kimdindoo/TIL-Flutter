@@ -1,4 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:go_router_v7_actual/screens/10_transition_screen_1.dart';
+import 'package:go_router_v7_actual/screens/11_error_screen.dart';
 import 'package:go_router_v7_actual/screens/1_basic_screen.dart';
 import 'package:go_router_v7_actual/screens/3_push_screen.dart';
 import 'package:go_router_v7_actual/screens/4_pop_base_screen.dart';
@@ -7,8 +10,14 @@ import 'package:go_router_v7_actual/screens/6_path_param_screen.dart';
 import 'package:go_router_v7_actual/screens/7_query_parameter.dart';
 import 'package:go_router_v7_actual/screens/8_%20nested_screen.dart';
 import 'package:go_router_v7_actual/screens/8_nested_child_screen.dart';
-
+import 'package:go_router_v7_actual/screens/9_login_screen.dart';
+import '../screens/10_transition_screen_2.dart';
+import '../screens/9_private_screen.dart';
 import '../screens/root_screen.dart';
+
+// 로그인이 됐는지 안됐는지
+// true - login OK / false - login NO
+bool authState = false;
 
 // https://blog.codefactory.ai -> / -> path
 // https://blog/codefactory.ai/flutter -> /flutter
@@ -17,6 +26,14 @@ import '../screens/root_screen.dart';
 // /basic/basic_two ->
 // /named
 final router = GoRouter(
+  redirect: (context, state) {
+    // return string (path) -> 해당 라우트로 이동한다 (path)
+    // return null -> 원래 이동하려던 라우트로 이동한다.
+    if (state.location == '/login/private' && !authState) {
+      return '/login';
+    }
+    return null;
+  },
   routes: [
     GoRoute(
       path: '/',
@@ -112,8 +129,58 @@ final router = GoRouter(
               },
             ),
           ],
-        )
+        ),
+        GoRoute(
+          path: 'login',
+          builder: (_, state) => const LoginScreen(),
+          routes: [
+            GoRoute(
+              path: 'private',
+              builder: (_, state) => const PrivateScreen(),
+            ),
+          ],
+        ),
+        GoRoute(
+          path: 'login2',
+          builder: (_, state) => const LoginScreen(),
+          routes: [
+            GoRoute(
+              path: 'private',
+              builder: (_, state) => const PrivateScreen(),
+              redirect: (context, state) {
+                if (!authState) {
+                  return '/login2';
+                }
+                return null;
+              },
+            ),
+          ],
+        ),
+        GoRoute(
+          path: 'transition',
+          builder: (_, state) => const TransitionScreenOne(),
+          routes: [
+            GoRoute(
+              path: 'detail',
+              pageBuilder: (_, state) => CustomTransitionPage(
+                transitionDuration: const Duration(seconds: 3),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  );
+                },
+                child: const TransitionScreenTwo(),
+              ),
+            ),
+          ],
+        ),
       ],
     ),
   ],
+  errorBuilder: (context, state) => ErrorScreen(
+    error: state.error.toString(),
+  ),
+  debugLogDiagnostics: true,
 );
