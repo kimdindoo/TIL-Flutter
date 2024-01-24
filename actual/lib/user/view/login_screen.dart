@@ -1,17 +1,15 @@
-import 'dart:convert';
-
 import 'package:actual/common/component/custom_text_form_field.dart';
 import 'package:actual/common/const/colors.dart';
-import 'package:actual/common/const/data.dart';
 import 'package:actual/common/layout/defalut_layout.dart';
-import 'package:actual/common/view/root_tab.dart';
+import 'package:actual/user/model/user_model.dart';
+import 'package:actual/user/provider/user_me_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../common/secure_storage/secure_storage.dart';
-
 class LoginScreen extends ConsumerStatefulWidget {
+  static String get routeName => '/login';
+
   const LoginScreen({Key? key}) : super(key: key);
 
   @override
@@ -24,7 +22,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dio = Dio();
+    final state = ref.watch(userMeProvider);
 
     return DefaultLayout(
       child: SingleChildScrollView(
@@ -60,39 +58,45 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: 16.0),
                 ElevatedButton(
-                  onPressed: () async {
-                    // ID:비밀번호
-                    final rawString = '$username:$password';
+                  onPressed: state is UserModelLoading
+                      ? null
+                      : () async {
+                          ref.read(userMeProvider.notifier).login(
+                                username: username,
+                                password: password,
+                              );
+                          // ID:비밀번호
+                          // final rawString = '$username:$password';
 
-                    Codec<String, String> stringToBase64 = utf8.fuse(base64);
+                          // Codec<String, String> stringToBase64 = utf8.fuse(base64);
 
-                    String token = stringToBase64.encode(rawString);
+                          // String token = stringToBase64.encode(rawString);
 
-                    final resp = await dio.post(
-                      'http://$ip/auth/login',
-                      options: Options(
-                        headers: {
-                          'authorization': 'Basic $token',
+                          // final resp = await dio.post(
+                          //   'http://$ip/auth/login',
+                          //   options: Options(
+                          //     headers: {
+                          //       'authorization': 'Basic $token',
+                          //     },
+                          //   ),
+                          // );
+
+                          // final refreshToken = resp.data['refreshToken'];
+                          // final accessToken = resp.data['accessToken'];
+
+                          // final storage = ref.read(secureStorageProvider);
+
+                          // await storage.write(
+                          //     key: REFRESH_TOKEN_KEY, value: refreshToken);
+                          // await storage.write(
+                          //     key: ACCESS_TOKEN_KEY, value: accessToken);
+
+                          // Navigator.of(context).push(
+                          //   MaterialPageRoute(
+                          //     builder: (_) => const RootTab(),
+                          //   ),
+                          // );
                         },
-                      ),
-                    );
-
-                    final refreshToken = resp.data['refreshToken'];
-                    final accessToken = resp.data['accessToken'];
-
-                    final storage = ref.read(secureStorageProvider);
-
-                    await storage.write(
-                        key: REFRESH_TOKEN_KEY, value: refreshToken);
-                    await storage.write(
-                        key: ACCESS_TOKEN_KEY, value: accessToken);
-
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const RootTab(),
-                      ),
-                    );
-                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: PRIMARY_COLOR,
                   ),

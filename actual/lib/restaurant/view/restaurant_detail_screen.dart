@@ -15,6 +15,7 @@ import '../../common/model/cursor_pagination_model.dart';
 import '../../rating/model/rating_model.dart';
 
 class RestaurantDetailScreen extends ConsumerStatefulWidget {
+  static String get routeName => 'restaurantDetail';
   final String id;
 
   const RestaurantDetailScreen({
