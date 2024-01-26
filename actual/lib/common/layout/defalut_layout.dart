@@ -5,12 +5,14 @@ class DefaultLayout extends StatelessWidget {
   final Widget child;
   final String? title;
   final Widget? bottomNavigationBar;
+  final Widget? floatingActionButton;
 
   const DefaultLayout({
     required this.child,
     this.backgroundColor,
     this.title,
     this.bottomNavigationBar,
+    this.floatingActionButton,
     Key? key,
   }) : super(key: key);
 
@@ -21,11 +23,12 @@ class DefaultLayout extends StatelessWidget {
       appBar: renderAppBar(),
       body: child,
       bottomNavigationBar: bottomNavigationBar,
+      floatingActionButton: floatingActionButton,
     );
   }
 
   AppBar? renderAppBar() {
-    if(title == null) {
+    if (title == null) {
       return null;
     } else {
       return AppBar(
@@ -33,7 +36,7 @@ class DefaultLayout extends StatelessWidget {
         elevation: 0,
         title: Text(
           title!,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16.0,
             fontWeight: FontWeight.w500,
           ),
