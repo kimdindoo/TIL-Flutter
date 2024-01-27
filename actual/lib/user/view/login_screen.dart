@@ -3,7 +3,6 @@ import 'package:actual/common/const/colors.dart';
 import 'package:actual/common/layout/defalut_layout.dart';
 import 'package:actual/user/model/user_model.dart';
 import 'package:actual/user/provider/user_me_provider.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

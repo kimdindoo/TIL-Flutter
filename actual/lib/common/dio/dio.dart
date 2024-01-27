@@ -1,7 +1,6 @@
 import 'package:actual/common/const/data.dart';
 import 'package:actual/common/secure_storage/secure_storage.dart';
 import 'package:actual/user/provider/auth_provider.dart';
-import 'package:actual/user/provider/user_me_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';

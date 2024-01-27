@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:actual/common/const/colors.dart';
 import 'package:actual/restaurant/model/restaurant_detail_model.dart';
 import 'package:flutter/material.dart';
