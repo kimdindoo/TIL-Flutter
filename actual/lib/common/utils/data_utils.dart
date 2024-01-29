@@ -4,7 +4,12 @@ import 'package:actual/common/const/data.dart';
 
 class DataUtils {
   static DateTime stringToDateTime(String value) {
-    return DateTime.parse(value);
+    print(value);
+    if (value is DateTime) {
+      return DateTime.parse(value);
+    } else {
+      return DateTime.now();
+    }
   }
 
   static String pathToUrl(String value) {
